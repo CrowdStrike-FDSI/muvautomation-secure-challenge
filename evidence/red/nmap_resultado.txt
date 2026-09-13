@@ -1,0 +1,15 @@
+Starting Nmap 7.99 (https://nmap.org) at 2026-09-12 19:44 -0500
+Initiating Parallel DNS resolution of 1 host. at 19:44, 0.02s elapsed
+Completed Parallel DNS resolution of 1 host. at 19:44, 0.02s elapsed
+Initiating SYN Stealth Scan at 19:44
+Scanning fdz-1c1f9c9f.net (100.110.229.99) [100 ports]
+Completed SYN Stealth Scan at 19:44, 2.05s elapsed (1 total ports)
+Nmap scan report for fdz-1c1f9c9f.net (100.110.229.99)
+Host is up.
+
+PORT   STATE  SERVICE
+80/tcp filtered http
+
+Read data files from: /usr/share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 2.17 seconds
+Raw packets sent: 2 (88B) | Rcvd: 0 (0B)

@@ -3,7 +3,7 @@
 **Proyecto:** MuvAutomation Secure Challenge — caso Falcon Incident Hub
 **Laboratorio:** 3 — Aplicación web pública por HTTP Red Team + Blue Team
 **Equipo:** Oscar Andrés Sánchez Porras · Robinson Steven Núñez Portela
-**Fecha de registro:** _completar_
+**Fecha de registro:** 13 de septiembre de 2026
 **Tag de entrega:** `lab-3`
 
 ---
@@ -75,7 +75,7 @@ Cada riesgo debe estar vinculado a:
 - Fase D (captura de tráfico) completada: `tcpdump` en la interfaz `tailscale0` capturó 35 paquetes correspondientes a las 3 peticiones (`/alertas`, `/docs`, `/openapi.json`); Wireshark confirmó en los 3 streams HTTP (`tcp.stream eq 0, 1, 2`) que tanto los requests como las respuestas viajan en texto plano, sin ningún indicio de cifrado.
 - Fase D (correlación de logs) completada: `access.log`/`error.log` revisados y correlacionados con 8 acciones del Red Team (ver `evidence/blue/correlacion-purple-team.md`). La ráfaga de escaneo `nmap -sT -sV` disparó la regla de ≥5×404 en 5 minutos. Se detectó además una caída no planeada del backend (4× `502`/`Connection refused`), que refuerza R9.
 - Fase E (hardening) completada: se aplicó `server_tokens off`, headers de seguridad (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) y restricción por IP (`allow`/`deny`) sobre `/docs` y `/openapi.json` en `nginx/muvautomation.conf`. `sudo nginx -t` validó la sintaxis y `sudo systemctl reload nginx` aplicó los cambios sin downtime.
-- Fase F (retest) completada para R1, R2 y R11 vía `curl` antes/después — ver `evidence/retest/`. Nota: el equipo opera principalmente vía Tailscale (rango `100.x.x.x`), no desde el segmento `192.168.15.0/24` original de Fase A; por eso la lista blanca de `/docs`/`/openapi.json` incluye tanto `LAB_CIDR` como las IPs Tailscale fijas del equipo. Pendiente: repetir `nmap`/`curl` de reconocimiento general (no solo headers) para consistencia con la evidencia Red Team de Fase C.
+- Fase F (retest) completada: `curl` antes/después para R1, R2 y R11 (ver `evidence/retest/`), más `nmap -sT -sV -p 80` de reconocimiento general repetido desde Kali. Resultado: `80/tcp open http nginx` (sin cambio de estado, esperado — el hardening no cierra el puerto), y sin la versión `1.28.3 (Ubuntu)` en el fingerprint (antes sí aparecía en Fase C) — evidencia adicional de que `server_tokens off` funciona incluso contra `-sV`. Nota metodológica: el primer intento de `nmap` marcó el puerto como `filtered` (`REASON: no-response`) por un timeout puntual de Tailscale, no por el hardening; se confirmó con `tailscale ping` (conexión directa, 28ms) y se repitió con `-T2 --max-retries 5`, obteniendo el resultado correcto.
 
 ---
 

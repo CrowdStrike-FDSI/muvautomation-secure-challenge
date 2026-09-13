@@ -6,7 +6,7 @@
 
 **Aplicación web pública por HTTP: construir, atacar, detectar, corregir y verificar**
 
-![Status](https://img.shields.io/badge/estado-en%20progreso-yellow)
+![Status](https://img.shields.io/badge/estado-completo-brightgreen)
 ![Modo](https://img.shields.io/badge/modo-acad%C3%A9mico-blue)
 ![Protocolo](https://img.shields.io/badge/protocolo-HTTP-orange)
 ![Servidor](https://img.shields.io/badge/servidor-Nginx-009639?logo=nginx&logoColor=white)
@@ -148,9 +148,9 @@ export TARGET_URL=http://$TARGET_IP
 | A | Construcción y publicación HTTP (Ubuntu, Nginx, backend, firewall) | Builder | ✅ Completa |
 | B | DFD ligero + hipótesis STRIDE + matriz de riesgos | Todo el equipo | ✅ Completa |
 | C | Reconocimiento y pruebas ofensivas | Red Team | ✅ Completa |
-| D | Correlación de logs y detección | Blue Team | 🔵 En curso (captura de tráfico completada; falta revisión de `access.log`) |
+| D | Correlación de logs y detección | Blue Team | ✅ Completa |
 | E | Hardening inicial de Nginx | Blue Team | ✅ Completa |
-| F | Retest y comparación antes/después | Purple Team | 🟡 Parcial (headers e IP verificados; falta repetir `nmap` de reconocimiento) |
+| F | Retest y comparación antes/después | Purple Team | ✅ Completa 
 
 ### 🟢 Construcción (Fase A)
 
@@ -242,7 +242,9 @@ location ~ ^/(docs|openapi\.json) {
 
 ![/openapi.json accesible (200 OK) desde IP autorizada tras el allowlist](docs/06-fase-e-hardening-retest/05-openapi-autorizado-200-ok.png)
 
-**Pendiente de Fase F:** repetir el reconocimiento general con `nmap`/`curl` (como en Fase C) para documentar la comparación completa antes/después, no solo los 3 hallazgos puntuales de headers e IP.
+
+![/Reconocimiento general con nmap/curl](docs/07-fase-f-verificar/verificar.png.png)
+
 
 > 🔓 **Límite pedagógico:** HTTP sigue siendo inseguro en confidencialidad e integridad, y la API no tiene autenticación real (el `allow`/`deny` por IP es una mitigación de exposición, no un control de identidad). Estos riesgos quedan abiertos intencionalmente para el **Laboratorio 4** (HTTPS, identidad, sesiones y roles).
 
@@ -273,6 +275,7 @@ La carpeta [`docs/`](docs/) contiene todas las capturas del laboratorio organiza
 - **`docs/04-fase-d-blue-team/`** — consulta de `/docs` y `/openapi.json`, y descarga de la evidencia de tráfico (`lab3-http-v2.pcap` y volcado de texto) hacia el equipo de análisis.
 - **`docs/05-wireshark/`** — los 3 streams HTTP analizados en Wireshark.
 - **`docs/06-fase-e-hardening-retest/`** — aplicación del hardening (`nginx -t`, `reload`), verificación de headers de seguridad, y retest de `/docs`/`/openapi.json` antes y después de restringir por IP.
+- **`docs/07-fase-f-verificar/`** — Headers de seguridad presentes 
 
 ---
 
@@ -284,27 +287,39 @@ La IA se emplea como **copiloto analítico**, nunca como autoridad. Todo hallazg
 
 ## ✅ Checklist de cierre
 
-- [ ] IP objetivo autorizada por el docente
+- [x] IP objetivo autorizada por el docente
 - [x] Sin datos reales en el contenido (alertas simuladas)
 - [x] Servicio HTTP accesible desde el segmento permitido
 - [x] Comandos y timestamps conservados (Red Team)
 - [x] Mínimo 3 eventos correlacionados (Blue Team) — 8 eventos, ver `evidence/blue/correlacion-purple-team.md`
 - [x] PCAP limitado al tráfico del laboratorio
 - [x] Headers de seguridad y reducción de exposición aplicados (Fase E)
-- [ ] Retest ejecutado (Fase F) — headers e IP verificados; falta repetir `nmap` de reconocimiento
+- [x] Retest ejecutado (Fase F) — headers, IP y `nmap` verificados
 - [x] Riesgos pendientes documentados para el Laboratorio 4
-- [ ] Tag `lab-3` publicado
-- [ ] Reflexión individual (máx. 250 palabras)
+- [x] Tag `lab-3` publicado
+- [x] Reflexión individual (máx. 250 palabras)
 
 ---
 
-## 📝 Qué falta para cerrar el laboratorio
+## ✍️ Reflexiones individuales
 
-1. ~~**Fase D:** revisar `access.log` / `error.log` y correlacionar al menos 3 eventos con las pruebas del Red Team (R7).~~ ✅ Completado — 8 eventos correlacionados.
-2. ~~**Fase E:** aplicar el hardening de Nginx y capturar evidencia antes/después.~~ ✅ Completado — ver `nginx/muvautomation.conf` y `evidence/retest/`.
-3. **Fase F:** repetir `nmap` de reconocimiento general tras el hardening (headers e IP ya verificados vía `curl`; falta la comparación de puertos/servicios como en Fase C) y documentar en `evidence/retest/`.
-4. Redactar la reflexión individual (máx. 250 palabras) y completar la fecha de registro en `risk-register.md`.
-5. Confirmar la IP autorizada por el docente y publicar el tag `lab-3`.
+**Robinson Steven Núñez Portela**
+
+Este laboratorio empezó para mí con algo muy simple: levantar el servidor Ubuntu, instalar Nginx y verificar que escuchara en el puerto 80. Parece un paso técnico sin mucha ciencia, pero fue la base de todo lo que vino después. Configurar el virtual host como reverse proxy hacia el backend en FastAPI y limitar el firewall solo al segmento del laboratorio me hizo entender que cada línea de configuración es una decisión de seguridad, aunque en el momento no lo parezca.
+
+Lo que más disfruté fue revisar access.log y error.log línea por línea buscando el rastro de mi compañero. Ver ocho respuestas 404 casi seguidas, con el User Agent delatando el escaneo de nmap, fue como armar un rompecabezas con piezas que ya estaban ahí. También aprendí que las reglas de detección simples, como contar cinco 404 en cinco minutos, tienen huecos. Un usuario legítimo con enlaces rotos las dispara igual, y un atacante paciente las esquiva sin esfuerzo.
+
+Aplicar el hardening en el propio servidor fue la parte que más me hizo pensar. Ocultar la versión de Nginx y restringir el acceso a docs por IP se sintió como un avance real, pero también entendí sus límites apenas probé el bloqueo y me di cuenta de que ni mi propia máquina entraba en el rango permitido, porque todos trabajamos por Tailscale. Tuve que ajustar la configuración pensando en cómo trabajamos de verdad, no en cómo asumía. La API sigue sin autenticación real, y eso queda para el siguiente laboratorio.
+
+**Oscar Andrés Sánchez Porras**
+
+Atacar la aplicación desde Kali me enseñó que el reconocimiento no necesita exploits sofisticados para revelar información valiosa. Bastó un nmap con detección de versión para confirmar exactamente qué Nginx corría el servidor, y un simple curl a docs para encontrar el esquema completo de una API que nadie pensó en ocultar. Swagger UI, pensado para facilitar el desarrollo, terminó siendo el hallazgo más significativo del ejercicio, ya que expuso los cuatro endpoints, sus parámetros y modelos de datos sin que tuviera que adivinar nada.
+
+Lo que más me hizo reflexionar fue ver mi propio rastro reflejado después en el access.log de mi compañero. Cada comando que corrí, el escaneo, las rutas de fingerprinting, la exploración manual con ZAP, quedó con timestamp, IP y User Agent, y coincidía al segundo con lo que él encontró del otro lado. Entendí que un atacante real no necesita ser sigiloso para ser efectivo, pero también que ser detectado no es lo mismo que ser identificado. Mi IP quedó registrada, no mi identidad.
+
+Verificar el hardening después fue igual de revelador. Intentar acceder a docs y recibir un 403 Forbidden en vez del Swagger de siempre confirmó que una restricción simple por IP cierra una puerta real, aunque no resuelve el problema de fondo. La API sigue sin autenticación, y cualquiera dentro del segmento autorizado puede escribir o modificar alertas sin dejar más rastro que una dirección compartida.
+
+---
 
 <div align="center">
 
