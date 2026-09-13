@@ -243,7 +243,7 @@ location ~ ^/(docs|openapi\.json) {
 ![/openapi.json accesible (200 OK) desde IP autorizada tras el allowlist](docs/06-fase-e-hardening-retest/05-openapi-autorizado-200-ok.png)
 
 
-![/Reconocimiento general con nmap/curl](docs/07-fase-f-verificar/verificar.png.png)
+![/Reconocimiento general con nmap/curl](docs/07-fase-f-verificar/verificar.png)
 
 
 > 🔓 **Límite pedagógico:** HTTP sigue siendo inseguro en confidencialidad e integridad, y la API no tiene autenticación real (el `allow`/`deny` por IP es una mitigación de exposición, no un control de identidad). Estos riesgos quedan abiertos intencionalmente para el **Laboratorio 4** (HTTPS, identidad, sesiones y roles).
