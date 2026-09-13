@@ -1,0 +1,5 @@
+2026/09/10 05:57:36 [notice] 2561#2561: using inherited sockets from "5;6;"
+2026/09/13 03:06:55 [error] 1386#1386: *40 connect() failed (111: Connection refused) while connecting to upstream, client: 100.80.65.73, server: _, request: "GET /openapi.json HTTP/1.1", upstream: "http://127.0.0.1:8000/openapi.json", host: "100.110.229.99"
+2026/09/13 03:08:17 [error] 1386#1386: *42 connect() failed (111: Connection refused) while connecting to upstream, client: 100.80.65.73, server: _, request: "GET /alertas HTTP/1.1", upstream: "http://127.0.0.1:8000/alertas", host: "100.110.229.99"
+2026/09/13 03:08:24 [error] 1386#1386: *44 connect() failed (111: Connection refused) while connecting to upstream, client: 100.80.65.73, server: _, request: "GET /docs HTTP/1.1", upstream: "http://127.0.0.1:8000/docs", host: "100.110.229.99"
+2026/09/13 03:08:37 [error] 1387#1387: *46 connect() failed (111: Connection refused) while connecting to upstream, client: 100.80.65.73, server: _, request: "GET /openapi.json HTTP/1.1", upstream: "http://127.0.0.1:8000/openapi.json", host: "100.110.229.99"

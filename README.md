@@ -109,7 +109,8 @@ muvautomation-secure-challenge/
 │   ├── 02-fase-b-modelado/
 │   ├── 03-fase-c-red-team/
 │   ├── 04-fase-d-blue-team/
-│   └── 05-wireshark/
+│   ├── 05-wireshark/
+│   └── 06-fase-e-hardening-retest/
 ├── evidence/
 │   ├── red/                   # Nmap, curl, reporte ZAP pasivo
 │   └── blue/                  # Logs, PCAP, evidencia de tráfico en claro
@@ -148,8 +149,8 @@ export TARGET_URL=http://$TARGET_IP
 | B | DFD ligero + hipótesis STRIDE + matriz de riesgos | Todo el equipo | ✅ Completa |
 | C | Reconocimiento y pruebas ofensivas | Red Team | ✅ Completa |
 | D | Correlación de logs y detección | Blue Team | 🔵 En curso (captura de tráfico completada; falta revisión de `access.log`) |
-| E | Hardening inicial de Nginx | Blue Team | 🔵 Pendiente |
-| F | Retest y comparación antes/después | Purple Team | 🔵 Pendiente |
+| E | Hardening inicial de Nginx | Blue Team | ✅ Completa |
+| F | Retest y comparación antes/después | Purple Team | 🟡 Parcial (headers e IP verificados; falta repetir `nmap` de reconocimiento) |
 
 ### 🟢 Construcción (Fase A)
 
@@ -197,17 +198,53 @@ Los tres streams HTTP capturados (`tcp.stream eq 0, 1, 2`) confirman que tanto l
 
 ![Stream 2 — GET /openapi.json](docs/05-wireshark/03-tcp-stream-2-get-openapi-json.png)
 
-### 🛠️ Hardening planeado (aún no aplicado)
+### 🛠️ Hardening aplicado (Fase E) y retest (Fase F)
+
+Configuración final de `nginx/muvautomation.conf`:
+
 ```nginx
 server_tokens off;
+
 add_header X-Content-Type-Options "nosniff" always;
 add_header X-Frame-Options "DENY" always;
 add_header Referrer-Policy "no-referrer" always;
-autoindex off;
-location ~ ^/(docs|openapi\.json) { deny all; }
+
+location ~ ^/(docs|openapi\.json) {
+    allow 192.168.15.0/24;   # LAB_CIDR (segmento local, Fase A)
+    allow 100.80.65.73;      # Tailscale - laptop-d03enf55 (Red Team)
+    allow 100.94.32.120;     # Tailscale - kawaki (equipo)
+    deny all;
+
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
 ```
 
-> 🔓 **Límite pedagógico:** HTTP sigue siendo inseguro en confidencialidad e integridad, y la API no tiene autenticación. Estos riesgos quedan abiertos intencionalmente para el **Laboratorio 4** (HTTPS, identidad, sesiones y roles).
+**Nota sobre el `allow`:** el equipo opera principalmente por Tailscale (rango `100.x.x.x`) desde la Fase C en adelante, no desde el segmento local `192.168.15.0/24` de la Fase A. Restringir solo a `LAB_CIDR` habría bloqueado también al propio equipo (se verificó: un `curl` desde el servidor `fdsi` hacia su propia IP pública sale y regresa por `tailscale0`, así que Nginx nunca ve un origen `192.168.15.x`). Por eso la lista blanca combina ambos: el segmento original **y** las IPs Tailscale fijas del equipo, en lugar de abrir todo el rango CGNAT de Tailscale (`100.64.0.0/10`), que expondría el endpoint a cualquier red Tailscale del mundo.
+
+**Resultado del retest (`curl` antes/después, ver `evidence/retest/`):**
+
+| Riesgo | Antes | Después |
+|---|---|---|
+| R1 | `Server: nginx/1.28.3 (Ubuntu)` | `Server: nginx` |
+| R2 | Sin headers de seguridad | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` presentes |
+| R11 | `/docs` y `/openapi.json` en `200 OK` para cualquier origen | `403 Forbidden` para IPs no autorizadas; `200 OK` solo para `LAB_CIDR` e IPs Tailscale del equipo |
+
+![Hardening aplicado — nginx -t, reload y headers nuevos](docs/06-fase-e-hardening-retest/01-hardening-aplicado-nginx-t-headers.png)
+
+![/docs bloqueado (403) antes de agregar las IPs Tailscale al allow](docs/06-fase-e-hardening-retest/02-docs-bloqueado-403-antes-allowlist.png)
+
+![Allowlist con IPs Tailscale aplicado — nginx -t y reload](docs/06-fase-e-hardening-retest/03-nginx-allowlist-ips-tailscale-aplicado.png)
+
+![/docs accesible (200 OK) desde IP autorizada tras el allowlist](docs/06-fase-e-hardening-retest/04-docs-autorizado-200-ok.png)
+
+![/openapi.json accesible (200 OK) desde IP autorizada tras el allowlist](docs/06-fase-e-hardening-retest/05-openapi-autorizado-200-ok.png)
+
+**Pendiente de Fase F:** repetir el reconocimiento general con `nmap`/`curl` (como en Fase C) para documentar la comparación completa antes/después, no solo los 3 hallazgos puntuales de headers e IP.
+
+> 🔓 **Límite pedagógico:** HTTP sigue siendo inseguro en confidencialidad e integridad, y la API no tiene autenticación real (el `allow`/`deny` por IP es una mitigación de exposición, no un control de identidad). Estos riesgos quedan abiertos intencionalmente para el **Laboratorio 4** (HTTPS, identidad, sesiones y roles).
 
 ---
 
@@ -235,6 +272,7 @@ La carpeta [`docs/`](docs/) contiene todas las capturas del laboratorio organiza
 - **`docs/03-fase-c-red-team/`** — reconocimiento con Nmap (`-sS` filtrado y `-sT -sV` confirmado), `curl` de cabeceras y contenido, exploración pasiva con OWASP ZAP (Manual Explore, árbol de sitios, panel de alertas) y verificación manual de rutas (`/`, `/admin`, `/alertas/1`, `/docs`).
 - **`docs/04-fase-d-blue-team/`** — consulta de `/docs` y `/openapi.json`, y descarga de la evidencia de tráfico (`lab3-http-v2.pcap` y volcado de texto) hacia el equipo de análisis.
 - **`docs/05-wireshark/`** — los 3 streams HTTP analizados en Wireshark.
+- **`docs/06-fase-e-hardening-retest/`** — aplicación del hardening (`nginx -t`, `reload`), verificación de headers de seguridad, y retest de `/docs`/`/openapi.json` antes y después de restringir por IP.
 
 ---
 
@@ -250,10 +288,10 @@ La IA se emplea como **copiloto analítico**, nunca como autoridad. Todo hallazg
 - [x] Sin datos reales en el contenido (alertas simuladas)
 - [x] Servicio HTTP accesible desde el segmento permitido
 - [x] Comandos y timestamps conservados (Red Team)
-- [ ] Mínimo 3 eventos correlacionados (Blue Team) — falta revisión de `access.log`
+- [x] Mínimo 3 eventos correlacionados (Blue Team) — 8 eventos, ver `evidence/blue/correlacion-purple-team.md`
 - [x] PCAP limitado al tráfico del laboratorio
-- [ ] Headers de seguridad y reducción de exposición aplicados (Fase E)
-- [ ] Retest ejecutado (Fase F)
+- [x] Headers de seguridad y reducción de exposición aplicados (Fase E)
+- [ ] Retest ejecutado (Fase F) — headers e IP verificados; falta repetir `nmap` de reconocimiento
 - [x] Riesgos pendientes documentados para el Laboratorio 4
 - [ ] Tag `lab-3` publicado
 - [ ] Reflexión individual (máx. 250 palabras)
@@ -262,9 +300,9 @@ La IA se emplea como **copiloto analítico**, nunca como autoridad. Todo hallazg
 
 ## 📝 Qué falta para cerrar el laboratorio
 
-1. **Fase D:** revisar `access.log` / `error.log` y correlacionar al menos 3 eventos con las pruebas del Red Team (R7).
-2. **Fase E:** aplicar el hardening de Nginx (`server_tokens off`, headers de seguridad, bloqueo de `/docs` y `/openapi.json`) y capturar evidencia antes/después.
-3. **Fase F:** repetir `nmap`/`curl` tras el hardening y documentar la comparación (`evidence/retest/`).
+1. ~~**Fase D:** revisar `access.log` / `error.log` y correlacionar al menos 3 eventos con las pruebas del Red Team (R7).~~ ✅ Completado — 8 eventos correlacionados.
+2. ~~**Fase E:** aplicar el hardening de Nginx y capturar evidencia antes/después.~~ ✅ Completado — ver `nginx/muvautomation.conf` y `evidence/retest/`.
+3. **Fase F:** repetir `nmap` de reconocimiento general tras el hardening (headers e IP ya verificados vía `curl`; falta la comparación de puertos/servicios como en Fase C) y documentar en `evidence/retest/`.
 4. Redactar la reflexión individual (máx. 250 palabras) y completar la fecha de registro en `risk-register.md`.
 5. Confirmar la IP autorizada por el docente y publicar el tag `lab-3`.
 
