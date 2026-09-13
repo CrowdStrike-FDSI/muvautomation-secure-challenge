@@ -1,0 +1,174 @@
+03:11:31.851299 IP laptop-d03enf55.tail61fc9f.ts.net.35952 > fdsi.tail61fc9f.ts.net.http: Flags [S], seq 3639931753, win 64480, options [mss 1240,sackOK,TS val 564717408 ecr 0,nop,wscale 7], length 0
+E..<%.@.@.%kdPAIdn.c.p.P...i.........g.........
+!..`........
+03:11:31.851430 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35952: Flags [S.], seq 1366983413, ack 3639931754, win 65084, options [mss 1240,sackOK,TS val 2239550791 ecr 564717408,nop,wscale 8], length 0
+E..<..@.@.KQdn.cdPAI.P.pQz.....j...<...........
+.|.G!..`....
+03:11:32.015220 IP laptop-d03enf55.tail61fc9f.ts.net.35952 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 1, win 504, options [nop,nop,TS val 564717783 ecr 2239550791], length 0
+E..4%.@.@.%rdPAIdn.c.p.P...jQz.............
+!....|.G
+03:11:32.015359 IP laptop-d03enf55.tail61fc9f.ts.net.35952 > fdsi.tail61fc9f.ts.net.http: Flags [P.], seq 1:86, ack 1, win 504, options [nop,nop,TS val 564717783 ecr 2239550791], length 85: HTTP: GET /alertas HTTP/1.1
+E...%.@.@.%.dPAIdn.c.p.P...jQz.......e.....
+!....|.GGET /alertas HTTP/1.1
+Host: 100.110.229.99
+User-Agent: curl/8.20.0
+Accept: */*
+
+
+03:11:32.015374 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35952: Flags [.], ack 86, win 254, options [nop,nop,TS val 2239550955 ecr 564717783], length 0
+E..4..@.@.0Wdn.cdPAI.P.pQz.................
+.|..!...
+03:11:32.433056 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35952: Flags [P.], seq 1:165, ack 86, win 254, options [nop,nop,TS val 2239551373 ecr 564717783], length 164: HTTP: HTTP/1.1 200 OK
+E.....@.@./.dn.cdPAI.P.pQz...........5.....
+.|..!...HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Sun, 13 Sep 2026 03:11:32 GMT
+Content-Type: application/json
+Content-Length: 2
+Connection: keep-alive
+
+[]
+03:11:32.644899 IP laptop-d03enf55.tail61fc9f.ts.net.35952 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 165, win 503, options [nop,nop,TS val 564718461 ecr 2239551373], length 0
+E..4%.@.@.%pdPAIdn.c.p.P....Qz.............
+!..}.|..
+03:11:32.644935 IP laptop-d03enf55.tail61fc9f.ts.net.35952 > fdsi.tail61fc9f.ts.net.http: Flags [F.], seq 86, ack 165, win 503, options [nop,nop,TS val 564718461 ecr 2239551373], length 0
+E..4%.@.@.%odPAIdn.c.p.P....Qz.............
+!..}.|..
+03:11:32.645060 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35952: Flags [F.], seq 165, ack 87, win 254, options [nop,nop,TS val 2239551585 ecr 564718461], length 0
+E..4..@.@.0Udn.cdPAI.P.pQz.................
+.|.a!..}
+03:11:32.706805 IP laptop-d03enf55.tail61fc9f.ts.net.35952 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 166, win 503, options [nop,nop,TS val 564718504 ecr 2239551585], length 0
+E..4%.@.@.%ndPAIdn.c.p.P....Qz.............
+!....|.a
+03:11:35.090772 IP laptop-d03enf55.tail61fc9f.ts.net.35962 > fdsi.tail61fc9f.ts.net.http: Flags [S], seq 2139015840, win 64480, options [mss 1240,sackOK,TS val 564720885 ecr 0,nop,wscale 7], length 0
+E..<.0@.@.. dPAIdn.c.z.P.~..........p..........
+!...........
+03:11:35.090994 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35962: Flags [S.], seq 3228973445, ack 2139015841, win 65084, options [mss 1240,sackOK,TS val 3777205515 ecr 564720885,nop,wscale 8], length 0
+E..<..@.@.KQdn.cdPAI.P.z.v9..~.....<...........
+.#..!.......
+03:11:35.130554 IP laptop-d03enf55.tail61fc9f.ts.net.35962 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 1, win 504, options [nop,nop,TS val 564720950 ecr 3777205515], length 0
+E..4.1@.@..'dPAIdn.c.z.P.~...v9.....'d.....
+!..6.#..
+03:11:35.130729 IP laptop-d03enf55.tail61fc9f.ts.net.35962 > fdsi.tail61fc9f.ts.net.http: Flags [P.], seq 1:83, ack 1, win 504, options [nop,nop,TS val 564720951 ecr 3777205515], length 82: HTTP: GET /docs HTTP/1.1
+E....2@.@...dPAIdn.c.z.P.~...v9............
+!..7.#..GET /docs HTTP/1.1
+Host: 100.110.229.99
+User-Agent: curl/8.20.0
+Accept: */*
+
+
+03:11:35.130764 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35962: Flags [.], ack 83, win 254, options [nop,nop,TS val 3777205554 ecr 564720951], length 0
+E..4+#@.@. 6dn.cdPAI.P.z.v9..~.............
+.#.2!..7
+03:11:35.145841 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35962: Flags [P.], seq 1:1209, ack 83, win 254, options [nop,nop,TS val 3777205570 ecr 564720951], length 1208: HTTP: HTTP/1.1 200 OK
+E...+$@.@..}dn.cdPAI.P.z.v9..~.......I.....
+.#.B!..7HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Sun, 13 Sep 2026 03:11:35 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 1035
+Connection: keep-alive
+
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+    <title>Falcon Incident Hub - API de Alertas - Swagger UI</title>
+    </head>
+    <body>
+    <div id="swagger-ui">
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <!-- `SwaggerUIBundle` is now available on the page -->
+    <script>
+    const ui = SwaggerUIBundle({
+        url: '/openapi.json',
+    "dom_id": "#swagger-ui",
+"layout": "BaseLayout",
+"deepLinking": true,
+"showExtensions": true,
+"showCommonExtensions": true,
+oauth2RedirectUrl: window.location.origin + '/docs/oauth2-redirect',
+    presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIBundle.SwaggerUIStandalonePreset
+        ],
+    })
+    </script>
+    </body>
+    </html>
+    
+03:11:35.250102 IP laptop-d03enf55.tail61fc9f.ts.net.35962 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 1209, win 524, options [nop,nop,TS val 564721016 ecr 3777205570], length 0
+E..4.3@.@..%dPAIdn.c.z.P.~...v>>....!......
+!..x.#.B
+03:11:35.264188 IP laptop-d03enf55.tail61fc9f.ts.net.35962 > fdsi.tail61fc9f.ts.net.http: Flags [F.], seq 83, ack 1209, win 524, options [nop,nop,TS val 564721016 ecr 3777205570], length 0
+E..4.4@.@..$dPAIdn.c.z.P.~...v>>....!......
+!..x.#.B
+03:11:35.264364 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35962: Flags [F.], seq 1209, ack 84, win 254, options [nop,nop,TS val 3777205688 ecr 564721016], length 0
+E..4+%@.@. 4dn.cdPAI.P.z.v>>.~.............
+.#..!..x
+03:11:35.294707 IP laptop-d03enf55.tail61fc9f.ts.net.35962 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 1210, win 524, options [nop,nop,TS val 564721123 ecr 3777205688], length 0
+E..4.5@.@..#dPAIdn.c.z.P.~...v>?.... ......
+!....#..
+03:11:37.476906 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [S], seq 1114431875, win 64480, options [mss 1240,sackOK,TS val 564723254 ecr 0,nop,wscale 7], length 0
+E..<&.@.@.%OdPAIdn.c...PBl.....................
+!..6........
+03:11:37.489700 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35968: Flags [S.], seq 2183297308, ack 1114431876, win 65084, options [mss 1240,sackOK,TS val 3933594566 ecr 564723254,nop,wscale 8], length 0
+E..<..@.@.KQdn.cdPAI.P..."y.Bl.....<...........
+.u..!..6....
+03:11:37.597037 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 1, win 504, options [nop,nop,TS val 564723421 ecr 3933594566], length 0
+E..4&.@.@.%VdPAIdn.c...PBl..."y............
+!....u..
+03:11:37.597274 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [P.], seq 1:91, ack 1, win 504, options [nop,nop,TS val 564723421 ecr 3933594566], length 90: HTTP: GET /openapi.json HTTP/1.1
+E...&.@.@.$.dPAIdn.c...PBl..."y......^.....
+!....u..GET /openapi.json HTTP/1.1
+Host: 100.110.229.99
+User-Agent: curl/8.20.0
+Accept: */*
+
+
+03:11:37.597290 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35968: Flags [.], ack 91, win 254, options [nop,nop,TS val 3933594674 ecr 564723421], length 0
+E..4..@.@...dn.cdPAI.P..."y.Bl.............
+.u.2!...
+03:11:37.693065 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35968: Flags [P.], seq 1:2457, ack 91, win 254, options [nop,nop,TS val 3933594770 ecr 564723421], length 2456: HTTP: HTTP/1.1 200 OK
+E.	...@.@...dn.cdPAI.P..."y.Bl.......).....
+.u..!...HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Sun, 13 Sep 2026 03:11:37 GMT
+Content-Type: application/json
+Content-Length: 2871
+Connection: keep-alive
+
+{"openapi":"3.1.0","info":{"title":"Falcon Incident Hub - API de Alertas","version":"0.1.0"},"paths":{"/alertas":{"get":{"summary":"List Alerts","operationId":"list_alerts_alertas_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}},"post":{"summary":"Register Alert","operationId":"register_alert_alertas_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Alert"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/alertas/{alert_id}":{"get":{"summary":"Describe Alert","operationId":"describe_alert_alertas__alert_id__get","parameters":[{"name":"alert_id","in":"path","required":true,"schema":{"type":"integer","title":"Alert Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"patch":{"summary":"Update Alert Status","operationId":"update_alert_status_alertas__alert_id__patch","parameters":[{"name":"alert_id","in":"path","required":true,"schema":{"type":"integer","title":"Alert Id"}},{"name":"status","in":"query","required":true,"schema":{"type":"string","title":"Status"}},{"name":"action_taken","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Action Taken"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}}},"components":{"schemas":{"Alert":{"properties":{"id":{"type":"integer","title":"Id"},"host":{"type":"string","title":"Host"},"severity":{"type":"string","title":"Severity"},"indicator_type":{"type":"string","title":"Indicator Type"},"status":{"type":"string","title":"Status","default":"open"},"action_taken":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Action Taken"}},"type":"object","required":["id","host","severity","indi
+03:11:37.693075 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35968: Flags [P.], seq 2457:3037, ack 91, win 254, options [nop,nop,TS val 3933594770 ecr 564723421], length 580: HTTP
+E..x..@.@..Wdn.cdPAI.P..."..Bl.............
+.u..!...cator_type"],"title":"Alert"},"HTTPValidationError":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/ValidationError"},"type":"array","title":"Detail"}},"type":"object","title":"HTTPValidationError"},"ValidationError":{"properties":{"loc":{"items":{"anyOf":[{"type":"string"},{"type":"integer"}]},"type":"array","title":"Location"},"msg":{"type":"string","title":"Message"},"type":{"type":"string","title":"Error Type"},"input":{"title":"Input"},"ctx":{"type":"object","title":"Context"}},"type":"object","required":["loc","msg","type"],"title":"ValidationError"}}}}
+03:11:37.930764 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35968: Flags [P.], seq 2457:3037, ack 91, win 254, options [nop,nop,TS val 3933595007 ecr 564723421], length 580: HTTP
+E..x..@.@..Vdn.cdPAI.P..."..Bl.............
+.u..!...cator_type"],"title":"Alert"},"HTTPValidationError":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/ValidationError"},"type":"array","title":"Detail"}},"type":"object","title":"HTTPValidationError"},"ValidationError":{"properties":{"loc":{"items":{"anyOf":[{"type":"string"},{"type":"integer"}]},"type":"array","title":"Location"},"msg":{"type":"string","title":"Message"},"type":{"type":"string","title":"Error Type"},"input":{"title":"Input"},"ctx":{"type":"object","title":"Context"}},"type":"object","required":["loc","msg","type"],"title":"ValidationError"}}}}
+03:11:38.019384 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 1229, win 524, options [nop,nop,TS val 564723636 ecr 3933594770], length 0
+E..4&.@.@.%TdPAIdn.c...PBl..."}............
+!....u..
+03:11:38.019445 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 2457, win 535, options [nop,nop,TS val 564723651 ecr 3933594770], length 0
+E..4&.@.@.%SdPAIdn.c...PBl...".............
+!....u..
+03:11:38.019458 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 3037, win 531, options [nop,nop,TS val 564723651 ecr 3933594770], length 0
+E..4&.@.@.%RdPAIdn.c...PBl...".............
+!....u..
+03:11:38.019493 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [F.], seq 91, ack 3037, win 535, options [nop,nop,TS val 564723652 ecr 3933594770], length 0
+E..4&.@.@.%QdPAIdn.c...PBl...".............
+!....u..
+03:11:38.019622 IP fdsi.tail61fc9f.ts.net.http > laptop-d03enf55.tail61fc9f.ts.net.35968: Flags [F.], seq 3037, ack 92, win 254, options [nop,nop,TS val 3933595096 ecr 564723652], length 0
+E..4..@.@...dn.cdPAI.P..."..Bl.............
+.u..!...
+03:11:38.059986 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 3037, win 535, options [nop,nop,TS val 564723881 ecr 3933595007,nop,nop,sack 1 {2457:3037}], length 0
+E..@&	@.@.%DdPAIdn.c...PBl...".............
+!....u.....
+."..."..
+03:11:38.173675 IP laptop-d03enf55.tail61fc9f.ts.net.35968 > fdsi.tail61fc9f.ts.net.http: Flags [.], ack 3038, win 535, options [nop,nop,TS val 564723953 ecr 3933595096], length 0
+E..4&
+@.@.%OdPAIdn.c...PBl...".............
+!....u..
