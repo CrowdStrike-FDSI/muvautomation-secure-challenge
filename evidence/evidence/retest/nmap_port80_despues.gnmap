@@ -1,0 +1,4 @@
+# Nmap 7.99 scan initiated Sun Sep 13 01:36:46 2026 as: /usr/lib/nmap/nmap --privileged -Pn -sT -sV -p 80 -oA evidence/retest/nmap_port80_despues --reason -T2 --max-retries 5 100.110.229.99
+Host: 100.110.229.99 (fdsi.tail61fc9f.ts.net)	Status: Up
+Host: 100.110.229.99 (fdsi.tail61fc9f.ts.net)	Ports: 80/open/tcp//http//nginx/
+# Nmap done at Sun Sep 13 01:36:59 2026 -- 1 IP address (1 host up) scanned in 12.69 seconds
