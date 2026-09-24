@@ -151,7 +151,7 @@ export TARGET_URL=http://$TARGET_IP
 | A | Construcción y publicación HTTP (Ubuntu, Nginx, backend, firewall) | Builder | ✅ Completa |
 | B | DFD ligero + hipótesis STRIDE + matriz de riesgos | Todo el equipo | ✅ Completa |
 | C | Reconocimiento y pruebas ofensivas | Red Team | ✅ Completa |
-| D | Correlación de logs y detección | Blue Team | 🔵 En curso (captura de tráfico completada; falta revisión de `access.log`) |
+| D | Correlación de logs y detección | Blue Team | ✅ Completa |
 | E | Hardening inicial de Nginx | Blue Team | ✅ Completa |
 | F | Retest y comparación antes/después | Purple Team | ✅ Completa |
 
@@ -288,20 +288,8 @@ Continuación directa del Lab 3: resuelve los 5 riesgos que quedaron explícitam
 
 ### 1. Arquitectura inicial (heredada de Lab 3)
 
-```
-Adversary / Red Team (Kali)
-          │  HTTP :80, texto claro, sin autenticacion
-          ▼
-    Nginx (reverse proxy)
-          │  proxy_pass → 127.0.0.1:8000
-          ▼
-  API de Alertas (FastAPI) — Falcon Incident Hub
-   ListAlerts / RegisterAlert / UpdateAlertStatus / DescribeAlert
-   (todos publicos, sin identidad)
-          │
-          ▼
-  Memoria (alertas simuladas, sin persistencia)
-```
+![DFD con límites de confianza](docs/00-diagramas/04-dfd-lab3.2.png)
+
 
 **Límites de confianza originales (Lab 3):**
 1. Tránsito de red → servidor (sin cifrar)
@@ -311,54 +299,7 @@ Adversary / Red Team (Kali)
 
 ### 2. Arquitectura fortalecida (Lab 3 - Parte 2, estado actual)
 
-```mermaid
-flowchart TB
-    subgraph ext["Zona externa / Red Team"]
-        A["Cliente HTTPS<br/>Kali / Tailscale"]
-    end
-
-    subgraph tb1["Limite de confianza 1: Transito de red"]
-        B["Nginx :443<br/>TLS 1.2/1.3 - cert Let's Encrypt via Tailscale<br/>HSTS + server_tokens off"]
-        B2["Nginx :80<br/>solo 301 redirect a HTTPS"]
-    end
-
-    subgraph tb2["Limite de confianza 2: Autenticacion"]
-        C{"JWT valido?"}
-        D["POST /token<br/>login usuario/password"]
-    end
-
-    subgraph tb3["Limite de confianza 3: Autorizacion por rol"]
-        E{"Rol es analyst?"}
-    end
-
-    subgraph tb4["Limite de confianza 4: Proxy a Aplicacion"]
-        F["FastAPI - systemd service<br/>127.0.0.1:8000, nunca expuesto"]
-    end
-
-    subgraph store["Almacenamiento en memoria"]
-        G[("lista alerts")]
-        H[("lista audit_log<br/>usuario + accion + timestamp")]
-    end
-
-    A -->|"HTTP :80"| B2
-    B2 -->|"301"| B
-    A -->|"HTTPS :443"| B
-    B --> D
-    D -->|"JWT firmado"| A
-    B --> C
-    C -->|"401 si no hay token"| A
-    C -->|"token OK"| E
-    E -->|"403 si rol viewer intenta escribir"| A
-    E -->|"GET: cualquier rol"| F
-    E -->|"POST/PATCH: solo analyst"| F
-    F --> G
-    F -->|"registra accion"| H
-
-    style tb1 fill:#1a3a1a,color:#ffffff
-    style tb2 fill:#3a1a1a,color:#ffffff
-    style tb3 fill:#3a3a1a,color:#ffffff
-    style tb4 fill:#1a1a3a,color:#ffffff
-```
+![Arquitectura del Laboratorio 3](docs/00-diagramas/03-arquitectura-lab3.2.png)
 
 **Límites de confianza actuales (Lab 3 - Parte 2):**
 1. **Tránsito de red** — ahora cifrado con TLS 1.3, certificado real (antes: texto claro)
