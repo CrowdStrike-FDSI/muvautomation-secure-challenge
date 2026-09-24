@@ -10,9 +10,9 @@
 
 ## 🎯 Propósito
 
-Este documento registra los riesgos identificados durante el ciclo **Diseñar → Construir → Atacar → Detectar → Corregir → Verificar** del Laboratorio 3, clasificándolos según su estado de tratamiento y dejando explícitos los riesgos que se heredan al **Laboratorio 4**.
+Este documento registra los riesgos identificados durante el ciclo **Diseñar → Construir → Atacar → Detectar → Corregir → Verificar** del Laboratorio 3, clasificándolos según su estado de tratamiento. Los riesgos que quedaron pendientes tras la primera entrega (Parte 1) se resolvieron en la **Parte 2** del mismo laboratorio (ver sección "Laboratorio 3 - Parte 2" en el `README.md`).
 
-Límite explícito del Lab 3: la solución funciona por HTTP, sin TLS y sin identidad.
+Límite explícito de la Parte 1: la solución funciona por HTTP, sin TLS y sin identidad. Esas limitaciones se levantan en la Parte 2.
 
 ---
 
@@ -23,7 +23,7 @@ Límite explícito del Lab 3: la solución funciona por HTTP, sin TLS y sin iden
 | ✅ **Corregido** | La causa raíz fue eliminada y verificada en el retest. |
 | 🟡 **Mitigado** | Se redujo la probabilidad o el impacto, pero el riesgo de fondo persiste. |
 | ⚪ **Aceptado** | El equipo decide no tratarlo en este laboratorio, con justificación explícita. |
-| 🔵 **Pendiente Lab 4** | Riesgo fuera de alcance de este laboratorio; se resolverá con HTTPS, identidad, sesiones y roles. |
+| 🔵 **Pendiente Lab 3 - Parte 2** | Riesgo fuera de alcance de este laboratorio; se resolverá con HTTPS, identidad, sesiones y roles. |
 
 ---
 
@@ -33,27 +33,27 @@ Límite explícito del Lab 3: la solución funciona por HTTP, sin TLS y sin iden
 |---|---|---|---|---|---|---|---|---|
 | R1 | Information Disclosure | El servidor expone la versión de Nginx en los headers de respuesta | `curl -I` antes/después — ver `evidence/retest/antes-headers-alertas.txt` (`Server: nginx/1.28.3 (Ubuntu)`) y `evidence/retest/despues-headers-alertas.txt` (`Server: nginx`) | Alta | Bajo | Media | ✅ Corregido | `server_tokens off;` aplicado en `nginx/muvautomation.conf`; verificado en retest (Fase F) |
 | R2 | Information Disclosure | Ausencia de headers de seguridad (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) | Reporte ZAP pasivo (Fase C) + `curl -I` antes/después — ver `evidence/retest/antes-headers-alertas.txt` (sin headers) y `evidence/retest/despues-headers-alertas.txt` (3 headers presentes) | Alta | Bajo | Media | ✅ Corregido | Headers agregados en `nginx/muvautomation.conf`; verificado en retest (Fase F) |
-| R3 | Elevation of Privilege / Tampering | Cualquier cliente del segmento puede crear o modificar alertas (`POST`/`PATCH /alertas`) sin autenticación, por el límite explícito del Lab 3 | `curl -X POST/PATCH` sin credenciales (pendiente — Fase C) | Alta | Alto | Alta | 🔵 Pendiente Lab 4 | Requiere autenticación/roles — fuera de alcance de Lab 3 |
+| R3 | Elevation of Privilege / Tampering | Cualquier cliente del segmento puede crear o modificar alertas (`POST`/`PATCH /alertas`) sin autenticación, por el límite explícito del Lab 3 | `curl -X POST/PATCH` sin credenciales (pendiente — Fase C) | Alta | Alto | Alta | ✅ Corregido (Lab 3 - Parte 2) | JWT con rol `analyst` requerido en `POST`/`PATCH /alertas`. Ver `threat-modeling-lab3-parte2.md` y `pruebas-y-logs-lab3-parte2.txt` |
 | R4 | Information Disclosure | Enumeración de rutas de la API sin restricción (cualquier ruta se reenvía tal cual al backend) | Reconocimiento con `curl`/ZAP pasivo — completado en Fase C (nmap `-sT -sV`, fingerprinting de headers, exploración manual de endpoints) | Media | Bajo | Baja | ⚪ Aceptado | Se documenta como riesgo latente; no se restringe en Lab 3 |
-| R5 | Information Disclosure | Contenido y payloads de alertas visibles en texto plano durante la captura de tráfico | PCAP filtrado (`tcpdump` + Wireshark, filtro `http`, streams 0–2) — ver `lab3-http-v2.pcap` y `evidence-lab3-http-plaintext.txt`; confirmado headers y body en claro (`GET /alertas`, `HTTP/1.1 200 OK`, `Content-Type: application/json`) | Alta | Medio | Alta | 🔵 Pendiente Lab 4 | Requiere TLS/HTTPS — fuera de alcance de este laboratorio |
-| R6 | Tampering | Sin TLS, un intermediario podría alterar el tráfico en tránsito (no se ejecutó MITM real) | Ausencia de cifrado confirmada por inspección de tráfico (Wireshark, `lab3-http-v2.pcap`) | Baja (en lab controlado) | Alto | Media | 🔵 Pendiente Lab 4 | Se resolverá con certificados y HTTPS en el Laboratorio 4 |
-| R7 | Repudiation | Sin autenticación ni identidad, no es posible atribuir una solicitud a un usuario específico | `evidence/blue/access.log` + `error.log`, correlacionados en `evidence/blue/correlacion-purple-team.md` (8 eventos Red Team↔log, ventana 13-sep 00:38–03:12 UTC). El log identifica IP y User-Agent, pero ninguna identidad real | Media | Medio | Media | 🔵 Pendiente Lab 4 | Requiere autenticación y control de identidad (Lab 4) |
+| R5 | Information Disclosure | Contenido y payloads de alertas visibles en texto plano durante la captura de tráfico | PCAP filtrado (`tcpdump` + Wireshark, filtro `http`, streams 0–2) — ver `lab3-http-v2.pcap` y `evidence-lab3-http-plaintext.txt`; confirmado headers y body en claro (`GET /alertas`, `HTTP/1.1 200 OK`, `Content-Type: application/json`) | Alta | Medio | Alta | ✅ Corregido (Lab 3 - Parte 2) | TLS 1.3 con certificado real (Let's Encrypt vía Tailscale). Ver `threat-modeling-lab3-parte2.md` |
+| R6 | Tampering | Sin TLS, un intermediario podría alterar el tráfico en tránsito (no se ejecutó MITM real) | Ausencia de cifrado confirmada por inspección de tráfico (Wireshark, `lab3-http-v2.pcap`) | Baja (en lab controlado) | Alto | Media | ✅ Corregido (Lab 3 - Parte 2) | TLS 1.3 (AEAD, `TLS_AES_256_GCM_SHA384`) garantiza integridad en tránsito |
+| R7 | Repudiation | Sin autenticación ni identidad, no es posible atribuir una solicitud a un usuario específico | `evidence/blue/access.log` + `error.log`, correlacionados en `evidence/blue/correlacion-purple-team.md` (8 eventos Red Team↔log, ventana 13-sep 00:38–03:12 UTC). El log identifica IP y User-Agent, pero ninguna identidad real | Media | Medio | Media | ✅ Corregido (Lab 3 - Parte 2) | Audit log en memoria asocia cada escritura al usuario real del JWT, no solo a la IP. Ver `GET /audit` en `main.py` |
 | R8 | Denial of Service (potencial) | El servicio no limita la tasa de solicitudes por IP | Prueba conceptual, no ejecutada (regla del laboratorio prohíbe DoS) | Baja | Medio | Baja | ⚪ Aceptado | Fuera de alcance; se documenta como riesgo latente para revisión futura |
 | R9 | Availability (limitación de diseño) | Las alertas se almacenan solo en memoria: se pierden al reiniciar el proceso de la API | Inspección del código (`app/main.py`); reforzado con evidencia en vivo en `error.log` (4× `connect() failed, Connection refused` hacia `127.0.0.1:8000` entre 03:06:55–03:08:37 UTC, backend caído/reiniciado durante las pruebas) | Alta (en cualquier reinicio) | Bajo | Baja | ⚪ Aceptado | Aceptado para Lab 3; una base de datos persistente queda como mejora futura |
-| R10 | Elevation of Privilege | Ausencia total de control de acceso o roles en la aplicación (cualquier acción está disponible para cualquiera) | Inspección de la configuración del sitio y del backend | Alta | Alto | Alta | 🔵 Pendiente Lab 4 | Se resolverá al introducir autenticación y autorización por roles |
-| R11 | Information Disclosure | `/docs` (Swagger UI) y `/openapi.json` accesibles sin autenticación, exponiendo el esquema completo de la API (los 4 endpoints, parámetros y modelos de datos) | Antes: `curl http://100.110.229.99/docs` y `/openapi.json` en 200 OK sin restricción — ver `evidence-lab3-http-plaintext.txt`, Wireshark (`tcp.stream eq 1` y `eq 2`), ZAP pasivo. Después: bloque `location` con `allow`/`deny` en Nginx — ver `evidence/retest/despues-docs-externo.txt` (403 sin autorización), `despues-docs-autorizado.txt` y `despues-openapi-autorizado.txt` (200 solo desde IPs en lista blanca) | Alta | Medio | Alta | 🟡 Mitigado | `location ~ ^/(docs\|openapi\.json) { allow ...; deny all; }` en `nginx/muvautomation.conf`, restringido a `LAB_CIDR` + IPs Tailscale fijas del equipo. Mitiga la exposición pública; no sustituye autenticación real (Lab 4) |
+| R10 | Elevation of Privilege | Ausencia total de control de acceso o roles en la aplicación (cualquier acción está disponible para cualquiera) | Inspección de la configuración del sitio y del backend | Alta | Alto | Alta | ✅ Corregido (Lab 3 - Parte 2) | Roles `viewer` (solo lectura) y `analyst` (lectura + escritura) validados por dependencia FastAPI |
+| R11 | Information Disclosure | `/docs` (Swagger UI) y `/openapi.json` accesibles sin autenticación, exponiendo el esquema completo de la API (los 4 endpoints, parámetros y modelos de datos) | Antes: `curl http://100.110.229.99/docs` y `/openapi.json` en 200 OK sin restricción — ver `evidence-lab3-http-plaintext.txt`, Wireshark (`tcp.stream eq 1` y `eq 2`), ZAP pasivo. Después: bloque `location` con `allow`/`deny` en Nginx — ver `evidence/retest/despues-docs-externo.txt` (403 sin autorización), `despues-docs-autorizado.txt` y `despues-openapi-autorizado.txt` (200 solo desde IPs en lista blanca) | Alta | Medio | Alta | 🟡 Mitigado | `location ~ ^/(docs\|openapi\.json) { allow ...; deny all; }` en `nginx/muvautomation.conf`, restringido a `LAB_CIDR` + IPs Tailscale fijas del equipo. Mitiga la exposición pública; no sustituye autenticación real (Lab 3 - Parte 2) |
 
 ---
 
-## 🔎 Detalle de riesgos pendientes para el Laboratorio 4
+## 🔎 Detalle de riesgos resueltos en la Parte 2
 
-| ID | Riesgo heredado | Por qué no se resuelve en Lab 3 |
+| ID | Riesgo (Parte 1) | Cómo se resolvió en Parte 2 |
 |---|---|---|
-| R3 | Escritura no autenticada en la API de alertas | Requiere identidad y control de acceso, fuera de alcance |
-| R5 | Confidencialidad del tráfico (sin TLS) | El Laboratorio 3 excluye deliberadamente HTTPS/certificados |
-| R6 | Integridad del tráfico (Tampering) | Requiere TLS para garantizar integridad extremo a extremo |
-| R7 | Trazabilidad de solicitudes (Repudiation) | Requiere identidad y autenticación, fuera de alcance |
-| R10 | Control de acceso (Elevation of Privilege) | Requiere modelo de roles, introducido en Lab 4 |
+| R3 | Escritura no autenticada en la API de alertas | JWT con rol `analyst` requerido en `POST`/`PATCH /alertas` |
+| R5 | Confidencialidad del tráfico (sin TLS) | TLS 1.3 con certificado real (Let's Encrypt vía Tailscale) |
+| R6 | Integridad del tráfico (Tampering) | TLS 1.3 (AEAD) garantiza integridad extremo a extremo |
+| R7 | Trazabilidad de solicitudes (Repudiation) | Audit log con usuario real del JWT, no solo IP |
+| R10 | Control de acceso (Elevation of Privilege) | Roles `viewer`/`analyst` validados por dependencia FastAPI |
 
 ---
 

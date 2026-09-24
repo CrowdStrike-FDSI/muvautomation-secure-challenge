@@ -6,7 +6,7 @@
 
 **Aplicación web pública por HTTP: construir, atacar, detectar, corregir y verificar**
 
-![Status](https://img.shields.io/badge/estado-completo-brightgreen)
+![Status](https://img.shields.io/badge/estado-en%20progreso-yellow)
 ![Modo](https://img.shields.io/badge/modo-acad%C3%A9mico-blue)
 ![Protocolo](https://img.shields.io/badge/protocolo-HTTP-orange)
 ![Servidor](https://img.shields.io/badge/servidor-Nginx-009639?logo=nginx&logoColor=white)
@@ -50,7 +50,7 @@ Este laboratorio es la **base acumulativa** sobre la que se construirán los sig
 - 📡 Evidenciar por qué HTTP expone metadatos y contenido en tránsito.
 - 🧩 Relacionar hallazgos con amenazas **STRIDE**, en especial *Information Disclosure* y *Tampering*.
 - 🧾 Analizar `access.log` / `error.log` desde una perspectiva Blue Team.
-- 🔧 Aplicar hardening inicial (sin adelantar autenticación ni HTTPS, reservados para el Laboratorio 4).
+- 🔧 Aplicar hardening inicial (sin adelantar autenticación ni HTTPS, reservados para el Laboratorio 3 - Parte 2).
 - 🤖 Usar IA de forma responsable, sobre evidencia anonimizada.
 
 ---
@@ -110,10 +110,13 @@ muvautomation-secure-challenge/
 │   ├── 03-fase-c-red-team/
 │   ├── 04-fase-d-blue-team/
 │   ├── 05-wireshark/
-│   └── 06-fase-e-hardening-retest/
+│   ├── 06-fase-e-hardening-retest/
+│   └── 07-lab3-parte2-tls-jwt-roles/
 ├── evidence/
 │   ├── red/                   # Nmap, curl, reporte ZAP pasivo
-│   └── blue/                  # Logs, PCAP, evidencia de tráfico en claro
+│   ├── blue/                  # Logs, PCAP, evidencia de tráfico en claro
+│   ├── retest/                # curl/nmap antes-después del hardening (Fase F)
+│   └── parte2/                # Respuestas individuales: TLS, systemd, JWT, roles
 ├── reports/
 │   └── zap-passive/           # Reporte HTML de OWASP ZAP (ya en GitHub)
 ├── risk-register.md           # Registro de riesgos (corregido/mitigado/aceptado/pendiente)
@@ -148,9 +151,9 @@ export TARGET_URL=http://$TARGET_IP
 | A | Construcción y publicación HTTP (Ubuntu, Nginx, backend, firewall) | Builder | ✅ Completa |
 | B | DFD ligero + hipótesis STRIDE + matriz de riesgos | Todo el equipo | ✅ Completa |
 | C | Reconocimiento y pruebas ofensivas | Red Team | ✅ Completa |
-| D | Correlación de logs y detección | Blue Team | ✅ Completa |
+| D | Correlación de logs y detección | Blue Team | 🔵 En curso (captura de tráfico completada; falta revisión de `access.log`) |
 | E | Hardening inicial de Nginx | Blue Team | ✅ Completa |
-| F | Retest y comparación antes/después | Purple Team | ✅ Completa 
+| F | Retest y comparación antes/después | Purple Team | ✅ Completa |
 
 ### 🟢 Construcción (Fase A)
 
@@ -242,11 +245,11 @@ location ~ ^/(docs|openapi\.json) {
 
 ![/openapi.json accesible (200 OK) desde IP autorizada tras el allowlist](docs/06-fase-e-hardening-retest/05-openapi-autorizado-200-ok.png)
 
+![nmap retest tras el hardening: puerto abierto, sin version de Nginx en el fingerprint](docs/06-fase-e-hardening-retest/06-nmap-retest-despues-open-sin-version.png)
 
-![/Reconocimiento general con nmap/curl](docs/07-fase-f-verificar/verificar.png)
+**Pendiente de Fase F:** ~~repetir el reconocimiento general con `nmap`/`curl`~~ ✅ Completado. `nmap -sT -sV -p 80` repetido desde Kali confirmó `80/tcp open http nginx` (puerto sin cambios, esperado) y sin el fingerprint de versión `1.28.3 (Ubuntu)` que sí aparecía en Fase C — evidencia adicional de que `server_tokens off` reduce la huella incluso frente a `-sV`. (Nota: el primer intento marcó `filtered` por un timeout puntual de Tailscale; se resolvió confirmando conexión directa con `tailscale ping` y repitiendo con `-T2 --max-retries 5`.)
 
-
-> 🔓 **Límite pedagógico:** HTTP sigue siendo inseguro en confidencialidad e integridad, y la API no tiene autenticación real (el `allow`/`deny` por IP es una mitigación de exposición, no un control de identidad). Estos riesgos quedan abiertos intencionalmente para el **Laboratorio 4** (HTTPS, identidad, sesiones y roles).
+> 🔓 **Límite pedagógico:** HTTP sigue siendo inseguro en confidencialidad e integridad, y la API no tiene autenticación real (el `allow`/`deny` por IP es una mitigación de exposición, no un control de identidad). Estos riesgos quedan abiertos intencionalmente para el **Laboratorio 3 - Parte 2** (HTTPS, identidad, sesiones y roles).
 
 ---
 
@@ -275,7 +278,235 @@ La carpeta [`docs/`](docs/) contiene todas las capturas del laboratorio organiza
 - **`docs/04-fase-d-blue-team/`** — consulta de `/docs` y `/openapi.json`, y descarga de la evidencia de tráfico (`lab3-http-v2.pcap` y volcado de texto) hacia el equipo de análisis.
 - **`docs/05-wireshark/`** — los 3 streams HTTP analizados en Wireshark.
 - **`docs/06-fase-e-hardening-retest/`** — aplicación del hardening (`nginx -t`, `reload`), verificación de headers de seguridad, y retest de `/docs`/`/openapi.json` antes y después de restringir por IP.
-- **`docs/07-fase-f-verificar/`** — Headers de seguridad presentes 
+- **`docs/07-lab3-parte2-tls-jwt-roles/`** — migración a HTTPS con certificado real (Tailscale/Let's Encrypt), servicio `systemd` del backend, y pruebas de autenticación JWT con roles.
+
+---
+
+## 🔐 Laboratorio 3 - Parte 2 — HTTPS, JWT y roles
+
+Continuación directa del Lab 3: resuelve los 5 riesgos que quedaron explícitamente pendientes en `risk-register.md` (R3, R5, R6, R7, R10).
+
+### 1. Arquitectura inicial (heredada de Lab 3)
+
+```
+Adversary / Red Team (Kali)
+          │  HTTP :80, texto claro, sin autenticacion
+          ▼
+    Nginx (reverse proxy)
+          │  proxy_pass → 127.0.0.1:8000
+          ▼
+  API de Alertas (FastAPI) — Falcon Incident Hub
+   ListAlerts / RegisterAlert / UpdateAlertStatus / DescribeAlert
+   (todos publicos, sin identidad)
+          │
+          ▼
+  Memoria (alertas simuladas, sin persistencia)
+```
+
+**Límites de confianza originales (Lab 3):**
+1. Tránsito de red → servidor (sin cifrar)
+2. Proxy → aplicación (sin control de quién cruza)
+
+---
+
+### 2. Arquitectura fortalecida (Lab 3 - Parte 2, estado actual)
+
+```mermaid
+flowchart TB
+    subgraph ext["Zona externa / Red Team"]
+        A[Cliente HTTPS<br/>Kali / Tailscale]
+    end
+
+    subgraph tb1["Limite de confianza 1: Transito de red"]
+        B[Nginx :443<br/>TLS 1.2/1.3 - cert Let's Encrypt via Tailscale<br/>HSTS + server_tokens off]
+        B2[Nginx :80<br/>solo 301 redirect a HTTPS]
+    end
+
+    subgraph tb2["Limite de confianza 2: Autenticacion"]
+        C{JWT valido?}
+        D[POST /token<br/>login usuario/password]
+    end
+
+    subgraph tb3["Limite de confianza 3: Autorizacion por rol"]
+        E{rol == analyst?}
+    end
+
+    subgraph tb4["Limite de confianza 4: Proxy -> Aplicacion"]
+        F[FastAPI - systemd service<br/>127.0.0.1:8000, nunca expuesto]
+    end
+
+    subgraph store["Almacenamiento en memoria"]
+        G[(alerts[])]
+        H[(audit_log[]<br/>usuario + accion + timestamp)]
+    end
+
+    A -->|HTTP :80| B2
+    B2 -->|301| B
+    A -->|HTTPS :443| B
+    B --> D
+    D -->|JWT firmado| A
+    B --> C
+    C -->|401 si no hay token| A
+    C -->|token OK| E
+    E -->|403 si rol=viewer intenta escribir| A
+    E -->|GET: cualquier rol| F
+    E -->|POST/PATCH: solo analyst| F
+    F --> G
+    F -->|registra accion| H
+
+    style tb1 fill:#1a3a1a
+    style tb2 fill:#3a1a1a
+    style tb3 fill:#3a3a1a
+    style tb4 fill:#1a1a3a
+```
+
+**Límites de confianza actuales (Lab 3 - Parte 2):**
+1. **Tránsito de red** — ahora cifrado con TLS 1.3, certificado real (antes: texto claro)
+2. **Autenticación** — nuevo. Toda solicitud a `/alertas` requiere JWT válido (antes: inexistente)
+3. **Autorización por rol** — nuevo. `viewer` solo lee, `analyst` lee y escribe (antes: inexistente)
+4. **Proxy → aplicación** — Nginx nunca expone `127.0.0.1:8000` directamente (heredado de Lab 3, sin cambios)
+
+---
+
+### 3. Mapeo Arquitectura inicial → Gap → Riesgo → Mejora → Arquitectura fortalecida
+
+| Arquitectura inicial (Lab 3) | Gap identificado | Riesgo / Amenaza (STRIDE) | Mejora implementada (Lab 3 - Parte 2) | Arquitectura fortalecida |
+|---|---|---|---|---|
+| Nginx escucha solo en `:80`, HTTP plano | Sin cifrado en tránsito | **R5** Information Disclosure — contenido y credenciales futuras viajarían en texto claro | Certificado real vía `tailscale cert` (Let's Encrypt), Nginx en `:443` con `TLSv1.2`/`TLSv1.3` únicamente, HSTS, redirect 301 de `:80` a `:443` | Todo el tráfico cifrado extremo a extremo; puerto 80 solo redirige, nunca sirve contenido |
+| Sin TLS, sin verificación de integridad | Tráfico modificable sin detección | **R6** Tampering — un intermediario podría alterar requests/responses sin que nadie lo note | Mismo TLS 1.3 (AEAD, `TLS_AES_256_GCM_SHA384`) garantiza integridad además de confidencialidad | Integridad verificada criptográficamente en cada request |
+| `POST`/`PATCH /alertas` sin ninguna verificación | Cualquiera en la red podía escribir o modificar alertas | **R3** Elevation of Privilege / Tampering — escritura no autenticada | Endpoint `POST /token` (JWT), dependencia `require_analyst` bloqueando escritura sin rol válido | Escritura solo posible con token JWT de un usuario con rol `analyst`; sin token → `401`, con rol incorrecto → `403` |
+| `access.log` solo registra IP y User-Agent | Imposible atribuir una acción a una persona | **R7** Repudiation — no hay identidad, solo origen de red | `audit_log` en memoria: cada `POST`/`PATCH` queda con `username`, `role`, `action` y `timestamp` reales del token | Endpoint `GET /audit` (solo analyst) permite atribuir cada escritura a un usuario específico, no solo a una IP compartida |
+| Ningún endpoint distingue lectura de escritura | Cualquiera con acceso de red tenía privilegios de administrador de facto | **R10** Elevation of Privilege — sin modelo de roles | Roles `viewer` (solo `GET`) y `analyst` (`GET`+`POST`+`PATCH`) codificados en el JWT y validados por dependencia FastAPI | Principio de mínimo privilegio aplicado: un usuario de solo consulta no puede alterar el estado del sistema |
+| Backend arrancado manualmente (`uvicorn ... &`) | Proceso frágil, se pierde al cerrar sesión SSH o reiniciar | *(No era STRIDE, era disponibilidad operativa — reforzaba R9)* | Servicio `systemd` (`falcon-api.service`) con `Restart=on-failure` y `enable` para arranque automático | Backend persistente, sobrevive a desconexiones SSH y reinicios del servidor |
+
+---
+
+### 4. Tabla de Threat Modeling actualizada (nuevas hipótesis STRIDE de Lab 3 - Parte 2)
+
+Estas se suman a H1–H5 ya documentadas en el `README.md` de Lab 3.
+
+| ID | STRIDE | Hipótesis | Validación | Estado |
+|---|---|---|---|---|
+| H6 | Spoofing | Un JWT robado (ej. por XSS, log expuesto, o captura antes del cifrado) permite impersonar al usuario hasta que expire (30 min) | Inspección de código: no hay revocación de tokens ni lista de bloqueo | 🔵 Riesgo aceptado con mitigación parcial (expiración corta); revocación real queda para trabajo futuro |
+| H7 | Tampering / Information Disclosure | `SECRET_KEY` está hardcodeada en `main.py`; si el repositorio se filtra o se sube mal, cualquiera puede firmar tokens válidos | Revisión de código — confirmado, es una decisión pedagógica explícita | 🟡 Mitigado con nota de producción en el propio código; debe migrar a variable de entorno antes de cualquier uso real |
+| H8 | Tampering | Downgrade de TLS a una versión insegura (1.0/1.1) si un atacante fuerza la negociación | `ssl_protocols TLSv1.2 TLSv1.3;` en Nginx — versiones antiguas ni se ofrecen en el handshake | ✅ Mitigado — verificado con `curl -v` mostrando negociación forzada en TLS 1.3 |
+| H9 | Denial of Service | El backend sigue siendo un único proceso; si se cae, `systemd` lo reinicia pero hay una ventana de indisponibilidad | Ya se observó en Lab 3 (evidencia de `502` en `error.log`); mitigado parcialmente ahora con `Restart=on-failure` | 🟡 Mitigado — sigue sin redundancia (un solo proceso, sin balanceo) |
+| H10 | Repudiation | El `audit_log` vive en memoria: un reinicio del backend borra el historial de auditoría, igual que las alertas (R9 original) | Inspección de código — `audit_log: List[AuditEntry] = []` sin persistencia en disco | 🔵 Pendiente — requiere base de datos persistente (mejora futura, fuera de alcance de hoy) |
+
+---
+
+### 5. Riesgos que quedan abiertos después de Lab 3 - Parte 2
+
+| Riesgo | Por qué sigue abierto |
+|---|---|
+| H6 (robo de token) | No hay revocación activa de JWT; solo expiración por tiempo |
+| H7 (`SECRET_KEY` hardcodeada) | Decisión pedagógica; en producción debe ir en variable de entorno / secret manager |
+| H9 (sin redundancia del backend) | Un solo proceso; sin balanceador ni réplicas |
+| H10 (audit log no persistente) | Se pierde en cada reinicio, igual que las alertas — requiere base de datos |
+
+---
+
+### TLS / HTTPS
+
+Certificado real emitido por Let's Encrypt a través de `tailscale cert` (sin necesidad de dominio público), válido para el hostname `fdsi.tail61fc9f.ts.net`. Nginx quedó configurado con `ssl_protocols TLSv1.2 TLSv1.3` (se descartan 1.0/1.1 por vulnerabilidades conocidas), HSTS, y redirección `301` automática de HTTP a HTTPS.
+
+![Tailscale status y ayuda de tailscale cert](docs/07-lab3-parte2-tls-jwt-roles/01-tailscale-status-cert-help.png)
+
+![Certificado emitido por Let's Encrypt](docs/07-lab3-parte2-tls-jwt-roles/02-tailscale-cert-emitido-letsencrypt.png)
+
+![Nginx con TLS aplicado y puerto 443 abierto en ufw](docs/07-lab3-parte2-tls-jwt-roles/03-nginx-tls-aplicado-ufw-443.png)
+
+![curl: HTTP redirige 301 a HTTPS, HTTPS responde 200](docs/07-lab3-parte2-tls-jwt-roles/04-curl-http-301-https-200.png)
+
+![Handshake TLS 1.3 verificado con curl -v](docs/07-lab3-parte2-tls-jwt-roles/05-tls-handshake-tlsv13-verificado.png)
+
+### Backend persistente (systemd)
+
+El backend FastAPI dependía de un proceso manual (`uvicorn ... &`) que se perdía al cerrar la sesión SSH — el mismo problema que ya habían documentado como R9 en Lab 3. Se creó `falcon-api.service` con `Restart=on-failure`, quedando tan persistente como Nginx.
+
+![Archivo falcon-api.service](docs/07-lab3-parte2-tls-jwt-roles/06-systemd-falcon-api-service-file.png)
+
+![systemctl status: active (running), enable aplicado](docs/07-lab3-parte2-tls-jwt-roles/07-systemd-falcon-api-active-running.png)
+
+![HTTPS + backend systemd respondiendo 200 OK](docs/07-lab3-parte2-tls-jwt-roles/08-https-alertas-200-backend-systemd.png)
+
+### Autenticación JWT y control de acceso por rol
+
+`POST /token` emite un JWT firmado (30 min de validez) tras validar usuario/contraseña. Dos roles: `viewer` (solo lectura) y `analyst` (lectura + escritura). Cada acción de escritura queda registrada en un log de auditoría en memoria con el usuario real, no solo la IP de origen — esto cierra el gap de Repudiation (R7) que quedó pendiente en Lab 3.
+
+![Instalación de python-jose, passlib y python-multipart](docs/07-lab3-parte2-tls-jwt-roles/09-pip-install-jwt-dependencias.png)
+
+![Backend con JWT corriendo bajo systemd tras fix de compatibilidad bcrypt](docs/07-lab3-parte2-tls-jwt-roles/10-backend-jwt-systemd-restart-ok.png)
+
+![Login JWT exitoso y 401 sin token](docs/07-lab3-parte2-tls-jwt-roles/11-jwt-login-y-401-sin-token.png)
+
+![200 OK con rol viewer leyendo, 403 Forbidden intentando escribir](docs/07-lab3-parte2-tls-jwt-roles/12-jwt-200-viewer-y-403-analyst.png)
+
+![200 OK con rol analyst escribiendo, y log de auditoría con usuario real](docs/07-lab3-parte2-tls-jwt-roles/13-jwt-analyst-200-y-audit-log.png)
+
+**Resultado de las pruebas (ver `evidence/parte2/` para el detalle completo, un archivo por prueba):**
+
+| Prueba | Resultado |
+|---|---|
+| Sin token | `401 Unauthorized` |
+| Token válido (analyst), leer | `200 OK` |
+| Token viewer, intentar escribir | `403 Forbidden` |
+| Token analyst, escribir | `200 OK` |
+| `GET /audit` con analyst | `200 OK`, log con usuario real |
+
+### Riesgos resueltos
+
+| Riesgo (Lab 3) | Estado en Lab 3 - Parte 2 |
+|---|---|
+| R3 — escritura no autenticada | ✅ Requiere JWT con rol `analyst` |
+| R5 — confidencialidad del tráfico | ✅ TLS 1.3 con certificado real |
+| R6 — integridad del tráfico | ✅ TLS 1.3 con certificado real |
+| R7 — repudiation (sin identidad) | ✅ Audit log con usuario real |
+| R10 — sin control de acceso/roles | ✅ Roles `viewer`/`analyst` |
+
+---
+
+## ❓ Preguntas de análisis
+
+### Purple Team (Fase D, Lab 3)
+
+**¿Qué pudo observar el Red Team sin explotar ninguna vulnerabilidad?**
+La versión exacta de Nginx (`nginx 1.28.3 (Ubuntu)`, vía `nmap -sV` y headers `curl`), el esquema completo de la API (4 endpoints, parámetros y modelos de datos) a través de `/docs` y `/openapi.json`, y el comportamiento de rutas inexistentes (`404` limpio, sin filtrar información). Todo esto con reconocimiento pasivo — `nmap`, `curl`, ZAP en modo pasivo — sin enviar un solo payload malicioso.
+
+**¿Qué pruebas de red no aparecieron en `access.log` y por qué?**
+El escaneo inicial `nmap -Pn -sS -v -p 80` (SYN scan / "half-open") no dejó rastro en `access.log`. Un SYN scan solo completa el primer paso del handshake TCP (SYN → SYN-ACK) y nunca llega a enviar una solicitud HTTP real; `access.log` de Nginx solo registra peticiones HTTP completas a nivel de aplicación, así que un sondeo que se queda en la capa de transporte es invisible para ese log. Solo el `nmap -sT -sV` posterior (que sí completa la conexión TCP) generó tráfico HTTP visible.
+
+**¿Qué control aplicado reduce exposición, pero no resuelve el riesgo de HTTP?**
+La restricción por IP (`allow`/`deny`) sobre `/docs` y `/openapi.json` en Fase E. Oculta el endpoint de quien no está en la lista blanca, pero no resuelve el problema de fondo: sin TLS, cualquier tráfico permitido seguía viajando en texto claro, y sin autenticación real, cualquiera *dentro* del rango permitido seguía teniendo acceso total. Es mitigación de exposición, no eliminación de la causa raíz — la misma distinción que quedó marcada como 🟡 Mitigado (no ✅ Corregido) en `risk-register.md`.
+
+**¿Qué datos necesitaría Blue Team para distinguir un `curl` legítimo de una actividad sospechosa?**
+Con solo IP y User-Agent (lo que tenía `access.log` en Lab 3) no alcanza — ambos son falsificables y compartidos entre varios usuarios de una misma red. Se necesitaría identidad real del solicitante (usuario autenticado, no solo origen de red), una línea base de comportamiento normal para comparar contra desviaciones, y contexto de secuencia (¿este patrón de rutas y tiempos corresponde a un flujo humano normal o a un barrido automatizado?). Es exactamente el gap que resolvió el `audit_log` con JWT en la Parte 2: ahora una escritura queda asociada a `username`, no solo a una IP.
+
+**¿Qué amenaza STRIDE debe priorizarse en la segunda parte del laboratorio?**
+Según la tabla de severidad del `risk-register.md`, **R3 y R10 (Elevation of Privilege)** tenían la calificación más alta (Alta/Alto/Alta) — cualquiera en la red podía escribir o alterar alertas sin ninguna verificación, y no había diferencia de privilegios entre un lector y un administrador de facto. Por eso la autenticación con roles fue la prioridad de fondo, aunque en la práctica hubo que resolver primero R5/R6 (TLS) porque de nada serviría un login si las credenciales viajaban en texto claro.
+
+**¿Qué conclusión propuesta por la IA no pudo comprobarse directamente?**
+Durante el retest de `nmap` en la Parte 2, la primera hipótesis planteada fue que el resultado `filtered` (`no-response`) se debía a que el tráfico estaba pasando por un relay DERP de Tailscale en vez de una conexión directa. Al correr `tailscale ping`, el resultado mostró conexión **directa** (`via 152.201.68.113`, 28ms), no un relay — así que esa hipótesis específica quedó descartada por la propia evidencia, no confirmada. La causa exacta del timeout puntual de `nmap` (pérdida de un paquete, timing por defecto muy ajustado) nunca se aisló con certeza; solo se confirmó que reintentar con `-T2 --max-retries 5` resolvía el síntoma.
+
+### Preguntas del docente (Lab 3 - Parte 2)
+
+**Si tengo HTTP, ¿cómo migro correctamente a HTTPS?**
+Se necesita un certificado válido para el hostname del servidor. En este caso, `tailscale cert` emitió uno real de Let's Encrypt sin necesitar dominio público, aprovechando que el equipo ya opera sobre una red Tailscale. Luego Nginx se configuró con dos bloques `server`: uno en el puerto 80 que solo hace `return 301 https://$host$request_uri;`, y otro en el 443 que sirve el contenido real con TLS. Ver sección "TLS / HTTPS" arriba.
+
+**Si utilizo TLS, ¿qué versión debería configurar?**
+Solo **TLS 1.2 y 1.3** (`ssl_protocols TLSv1.2 TLSv1.3;`), nunca 1.0 ni 1.1 — tienen vulnerabilidades conocidas (BEAST, POODLE) y están deprecadas por los estándares actuales (NIST, OWASP). Verificado con `curl -v`: la negociación cae directo en TLS 1.3 con cifrado AEAD (`TLS_AES_256_GCM_SHA384`).
+
+**¿Estoy exponiendo servicios o puertos que realmente no necesito?**
+El backend FastAPI nunca se expone directamente — escucha solo en `127.0.0.1:8000` (loopback), y todo pasa por el reverse proxy de Nginx. Los puertos 80 y 443 están además restringidos por `ufw` al segmento del laboratorio y al rango Tailscale del equipo, no abiertos a "Anywhere". Queda como pendiente de revisión: el puerto 22 (SSH) sigue permitido desde "Anywhere" — sería el siguiente candidato a restringir.
+
+**¿Qué componentes deberían estar restringidos?**
+`/docs` y `/openapi.json` (por IP, desde Fase E), y ahora toda operación de escritura (`POST`/`PATCH /alertas`), restringida por rol JWT (`analyst`). El endpoint nuevo `GET /audit` también quedó restringido solo a `analyst`, para que no cualquiera pueda ver el historial de acciones de otros usuarios.
+
+**¿Qué controles puedo agregar para reducir la superficie de ataque?**
+`server_tokens off` (oculta versión de Nginx), headers de seguridad (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, y ahora `Strict-Transport-Security`), autenticación obligatoria en todos los endpoints de `/alertas`, control de acceso por rol, y un backend persistente vía `systemd` que reduce la ventana de indisponibilidad frente a caídas.
+
+**¿Cómo cambia mi arquitectura después del análisis de amenazas?**
+Pasó de 2 límites de confianza (tránsito de red, proxy→aplicación) a 4: se agregaron autenticación (¿JWT válido?) y autorización por rol (¿rol == analyst?) como nuevas fronteras explícitas antes de llegar al backend. Ver el diagrama DFD actualizado arriba, en la sección "Arquitectura fortalecida (Lab 3 - Parte 2)".
 
 ---
 
@@ -285,25 +516,9 @@ La IA se emplea como **copiloto analítico**, nunca como autoridad. Todo hallazg
 
 ---
 
-## ✅ Checklist de cierre
-
-- [x] IP objetivo autorizada por el docente
-- [x] Sin datos reales en el contenido (alertas simuladas)
-- [x] Servicio HTTP accesible desde el segmento permitido
-- [x] Comandos y timestamps conservados (Red Team)
-- [x] Mínimo 3 eventos correlacionados (Blue Team) — 8 eventos, ver `evidence/blue/correlacion-purple-team.md`
-- [x] PCAP limitado al tráfico del laboratorio
-- [x] Headers de seguridad y reducción de exposición aplicados (Fase E)
-- [x] Retest ejecutado (Fase F) — headers, IP y `nmap` verificados
-- [x] Riesgos pendientes documentados para el Laboratorio 4
-- [x] Tag `lab-3` publicado
-- [x] Reflexión individual (máx. 250 palabras)
-
----
-
 ## ✍️ Reflexiones individuales
 
-**Robinson Steven Núñez Portela**
+### Robinson Steven Núñez Portela
 
 Este laboratorio empezó para mí con algo muy simple: levantar el servidor Ubuntu, instalar Nginx y verificar que escuchara en el puerto 80. Parece un paso técnico sin mucha ciencia, pero fue la base de todo lo que vino después. Configurar el virtual host como reverse proxy hacia el backend en FastAPI y limitar el firewall solo al segmento del laboratorio me hizo entender que cada línea de configuración es una decisión de seguridad, aunque en el momento no lo parezca.
 
@@ -311,7 +526,7 @@ Lo que más disfruté fue revisar access.log y error.log línea por línea busca
 
 Aplicar el hardening en el propio servidor fue la parte que más me hizo pensar. Ocultar la versión de Nginx y restringir el acceso a docs por IP se sintió como un avance real, pero también entendí sus límites apenas probé el bloqueo y me di cuenta de que ni mi propia máquina entraba en el rango permitido, porque todos trabajamos por Tailscale. Tuve que ajustar la configuración pensando en cómo trabajamos de verdad, no en cómo asumía. La API sigue sin autenticación real, y eso queda para el siguiente laboratorio.
 
-**Oscar Andrés Sánchez Porras**
+### Oscar Andrés Sánchez Porras
 
 Atacar la aplicación desde Kali me enseñó que el reconocimiento no necesita exploits sofisticados para revelar información valiosa. Bastó un nmap con detección de versión para confirmar exactamente qué Nginx corría el servidor, y un simple curl a docs para encontrar el esquema completo de una API que nadie pensó en ocultar. Swagger UI, pensado para facilitar el desarrollo, terminó siendo el hallazgo más significativo del ejercicio, ya que expuso los cuatro endpoints, sus parámetros y modelos de datos sin que tuviera que adivinar nada.
 
@@ -320,6 +535,20 @@ Lo que más me hizo reflexionar fue ver mi propio rastro reflejado después en e
 Verificar el hardening después fue igual de revelador. Intentar acceder a docs y recibir un 403 Forbidden en vez del Swagger de siempre confirmó que una restricción simple por IP cierra una puerta real, aunque no resuelve el problema de fondo. La API sigue sin autenticación, y cualquiera dentro del segmento autorizado puede escribir o modificar alertas sin dejar más rastro que una dirección compartida.
 
 ---
+
+## ✅ Checklist de cierre
+
+- [?] IP objetivo autorizada por el docente
+- [x] Sin datos reales en el contenido (alertas simuladas)
+- [x] Servicio HTTP accesible desde el segmento permitido
+- [x] Comandos y timestamps conservados (Red Team)
+- [x] Mínimo 3 eventos correlacionados (Blue Team). 8 eventos, ver `evidence/blue/correlacion-purple-team.md`
+- [x] PCAP limitado al tráfico del laboratorio
+- [x] Headers de seguridad y reducción de exposición aplicados (Fase E)
+- [x] Retest ejecutado (Fase F). Headers, IP y nmap verificados
+- [x] Riesgos pendientes documentados para el Laboratorio 3 - Parte 2
+- [x] Tag `lab-3` publicado
+- [x] Reflexión individual (máx. 250 palabras)
 
 <div align="center">
 

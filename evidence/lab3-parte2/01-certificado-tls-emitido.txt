@@ -1,0 +1,4 @@
+issuer=C=US, O=Let's Encrypt, CN=YE1
+subject=CN=fdsi.tail61fc9f.ts.net
+notBefore=Sep 23 21:17:09 2026 GMT
+notAfter=Dec 22 21:17:08 2026 GMT

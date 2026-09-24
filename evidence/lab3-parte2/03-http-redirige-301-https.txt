@@ -1,0 +1,15 @@
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.28.3 (Ubuntu)
+Date: Wed, 23 Sep 2026 22:30:23 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://fdsi.tail61fc9f.ts.net/alertas
+
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>nginx/1.28.3 (Ubuntu)</center>
+</body>
+</html>

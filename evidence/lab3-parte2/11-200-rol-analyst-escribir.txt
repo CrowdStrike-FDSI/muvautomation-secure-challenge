@@ -1,0 +1,11 @@
+HTTP/2 200
+server: nginx
+date: Wed, 23 Sep 2026 22:49:51 GMT
+content-type: application/json
+content-length: 108
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: no-referrer
+strict-transport-security: max-age=15552000; includeSubDomains
+
+{"id":1,"host":"test-host","severity":"high","indicator_type":"malware","status":"open","action_taken":null}

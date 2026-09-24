@@ -1,0 +1,11 @@
+HTTP/2 403
+server: nginx
+date: Wed, 23 Sep 2026 22:48:42 GMT
+content-type: application/json
+content-length: 55
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: no-referrer
+strict-transport-security: max-age=15552000; includeSubDomains
+
+{"detail":"Se requiere rol 'analyst' para esta accion"}

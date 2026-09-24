@@ -1,0 +1,12 @@
+HTTP/2 401
+server: nginx
+date: Wed, 23 Sep 2026 22:47:24 GMT
+content-type: application/json
+content-length: 30
+www-authenticate: Bearer
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: no-referrer
+strict-transport-security: max-age=15552000; includeSubDomains
+
+{"detail":"Not authenticated"}
