@@ -314,50 +314,50 @@ Adversary / Red Team (Kali)
 ```mermaid
 flowchart TB
     subgraph ext["Zona externa / Red Team"]
-        A[Cliente HTTPS<br/>Kali / Tailscale]
+        A["Cliente HTTPS<br/>Kali / Tailscale"]
     end
 
     subgraph tb1["Limite de confianza 1: Transito de red"]
-        B[Nginx :443<br/>TLS 1.2/1.3 - cert Let's Encrypt via Tailscale<br/>HSTS + server_tokens off]
-        B2[Nginx :80<br/>solo 301 redirect a HTTPS]
+        B["Nginx :443<br/>TLS 1.2/1.3 - cert Let's Encrypt via Tailscale<br/>HSTS + server_tokens off"]
+        B2["Nginx :80<br/>solo 301 redirect a HTTPS"]
     end
 
     subgraph tb2["Limite de confianza 2: Autenticacion"]
-        C{JWT valido?}
-        D[POST /token<br/>login usuario/password]
+        C{"JWT valido?"}
+        D["POST /token<br/>login usuario/password"]
     end
 
     subgraph tb3["Limite de confianza 3: Autorizacion por rol"]
-        E{rol == analyst?}
+        E{"Rol es analyst?"}
     end
 
-    subgraph tb4["Limite de confianza 4: Proxy -> Aplicacion"]
-        F[FastAPI - systemd service<br/>127.0.0.1:8000, nunca expuesto]
+    subgraph tb4["Limite de confianza 4: Proxy a Aplicacion"]
+        F["FastAPI - systemd service<br/>127.0.0.1:8000, nunca expuesto"]
     end
 
     subgraph store["Almacenamiento en memoria"]
-        G[(alerts[])]
-        H[(audit_log[]<br/>usuario + accion + timestamp)]
+        G[("lista alerts")]
+        H[("lista audit_log<br/>usuario + accion + timestamp")]
     end
 
-    A -->|HTTP :80| B2
-    B2 -->|301| B
-    A -->|HTTPS :443| B
+    A -->|"HTTP :80"| B2
+    B2 -->|"301"| B
+    A -->|"HTTPS :443"| B
     B --> D
-    D -->|JWT firmado| A
+    D -->|"JWT firmado"| A
     B --> C
-    C -->|401 si no hay token| A
-    C -->|token OK| E
-    E -->|403 si rol=viewer intenta escribir| A
-    E -->|GET: cualquier rol| F
-    E -->|POST/PATCH: solo analyst| F
+    C -->|"401 si no hay token"| A
+    C -->|"token OK"| E
+    E -->|"403 si rol viewer intenta escribir"| A
+    E -->|"GET: cualquier rol"| F
+    E -->|"POST/PATCH: solo analyst"| F
     F --> G
-    F -->|registra accion| H
+    F -->|"registra accion"| H
 
-    style tb1 fill:#1a3a1a
-    style tb2 fill:#3a1a1a
-    style tb3 fill:#3a3a1a
-    style tb4 fill:#1a1a3a
+    style tb1 fill:#1a3a1a,color:#ffffff
+    style tb2 fill:#3a1a1a,color:#ffffff
+    style tb3 fill:#3a3a1a,color:#ffffff
+    style tb4 fill:#1a1a3a,color:#ffffff
 ```
 
 **Límites de confianza actuales (Lab 3 - Parte 2):**
