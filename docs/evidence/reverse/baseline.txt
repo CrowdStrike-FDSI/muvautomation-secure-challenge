@@ -1,0 +1,96 @@
+=== BASELINE FORENSE - Lab 4 Parte 2 ===
+Fecha: Wed Oct 14 12:11:24 PM -05 2026
+Equipo: LAPTOP-D03ENF55 / x86_64
+
+### file
+crackme_level1:          ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=01c8816fe4b791d9ded9a73e62f8f443464716ba, for GNU/Linux 3.2.0, with debug_info, not stripped
+crackme_level2:          ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=3eb5b89d4b93c6773577b448cd1cc98400e2196b, for GNU/Linux 3.2.0, with debug_info, not stripped
+crackme_level2_stripped: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=df25a1fa020d404f3512421bfcf8c89b417e8554, for GNU/Linux 3.2.0, stripped
+
+### sha256sum
+61e980febe84b1003b5a3b641468e915b984f7fdd835be9828af54233f88c68c  crackme_level1
+8dc5931dfbf74d7371de9ca9ed8cc57bfe0af4521346202dcd1c701dd8b6f4e5  crackme_level2
+c8e638741272a87ee3b30fe8878898c1aa977e6a879a1ec0b271034b5bb9aed3  crackme_level2_stripped
+
+### Verificacion contra hashes oficiales
+crackme_level1: OK
+crackme_level2: OK
+crackme_level2_stripped: OK
+
+### readelf -h crackme_level1
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x401070
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          15456 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         14
+  Size of section headers:           64 (bytes)
+  Number of section headers:         36
+  Section header string table index: 35
+
+### readelf -h crackme_level2
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x401070
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          15896 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         14
+  Size of section headers:           64 (bytes)
+  Number of section headers:         36
+  Section header string table index: 35
+
+### Interprete y librerias (level1)
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+
+### Simbolos
+-- nm level2 (primeras 15) --
+00000000004021c4 r __abi_tag
+0000000000404030 B __bss_start
+0000000000404030 b completed.0
+0000000000404020 D __data_start
+0000000000404020 W data_start
+00000000004010b0 t deregister_tm_clones
+00000000004010a0 T _dl_relocate_static_pie
+0000000000401120 t __do_global_dtors_aux
+0000000000403e00 d __do_global_dtors_aux_fini_array_entry
+0000000000404028 D __dso_handle
+0000000000403e08 d _DYNAMIC
+0000000000404030 D _edata
+0000000000404038 B _end
+0000000000402090 r expected.0
+0000000000401308 T _fini
+-- nm level2_stripped --
+nm: crackme_level2_stripped: no symbols
+-- secciones symtab/debug level2 --
+  [27] .debug_aranges    PROGBITS         0000000000000000  0000304f
+  [28] .debug_info       PROGBITS         0000000000000000  0000307f
+  [29] .debug_abbrev     PROGBITS         0000000000000000  000032f2
+  [30] .debug_line       PROGBITS         0000000000000000  00003401
+  [31] .debug_str        PROGBITS         0000000000000000  00003513
+  [32] .debug_line_str   PROGBITS         0000000000000000  00003629
+  [33] .symtab           SYMTAB           0000000000000000  000036c8
+-- secciones symtab/debug level2_stripped --
+(sin salida = no hay .symtab ni .debug_*)
