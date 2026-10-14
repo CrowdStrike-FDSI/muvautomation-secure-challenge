@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FDSI | Reverse Engineering CTF Lab</title>
+<style>
+:root {
+ --bg:#07111f; --panel:#0d1d33; --panel2:#102642; --line:#234565; --txt:#e9f3ff;
+ --muted:#9eb4cc; --cyan:#67e8f9; --green:#86efac; --yellow:#fde68a; --red:#fda4af;
+ --purple:#c4b5fd;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 85% -10%,#1c3b68,transparent 30%),var(--bg);
+color:var(--txt);font:16px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.top{position:sticky;top:0;z-index:8;background:rgba(7,17,31,.95);backdrop-filter:blur(9px);
+border-bottom:1px solid var(--line);padding:10px 18px}
+.topin{max-width:1180px;margin:auto;display:flex;align-items:center;gap:14px}
+.progress{height:11px;background:#14243a;border-radius:20px;overflow:hidden;flex:1;border:1px solid #274a6a}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:.2s}
+header,main{max-width:1180px;margin:auto;padding:28px 20px}
+header{padding-bottom:8px}
+h1{font-size:clamp(2.2rem,5vw,4.2rem);line-height:1.02;margin:.15em 0}
+h2{margin-top:0}
+.kicker{color:var(--cyan);font-size:.8rem;text-transform:uppercase;letter-spacing:.16em;font-weight:800}
+.muted{color:var(--muted)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.badge{padding:5px 9px;border-radius:999px;background:#0b192b;border:1px solid var(--line);font-size:.83rem}
+.card{background:linear-gradient(180deg,rgba(17,40,68,.96),rgba(11,27,47,.96));border:1px solid var(--line);
+border-radius:17px;padding:20px;margin:16px 0;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.mission{padding:16px;border-radius:13px;background:#09182a;border:1px solid var(--line)}
+.warn{border-left:5px solid var(--red)} .good{border-left:5px solid var(--green)} .info{border-left:5px solid var(--cyan)}
+details{border:1px solid var(--line);border-radius:13px;margin:10px 0;overflow:hidden}
+summary{padding:14px 16px;cursor:pointer;font-weight:750;background:#10243c}
+.inside{padding:12px 16px 18px}
+.check{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 4px;border-bottom:1px dashed #294861;align-items:start}
+.check:last-child{border-bottom:none} .check input{margin-top:5px;transform:scale(1.25);accent-color:#67e8f9}
+small{display:block;color:var(--muted)}
+pre{background:#06101c;border:1px solid #254765;border-radius:12px;padding:14px;overflow:auto;color:#d8efff}
+code{background:#071522;border:1px solid #23435f;border-radius:6px;padding:2px 5px;color:#c7f5ff}
+a{color:#8be8ff}
+button{border:1px solid #39668a;background:#153552;color:white;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(1.15)}
+.hint{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#201c36;border:1px solid #5b4f81;color:#e7ddff}
+.field{display:block;margin:8px 0} input[type=text],textarea{width:100%;padding:9px 11px;background:#071522;color:var(--txt);
+border:1px solid #315674;border-radius:9px;font:inherit} textarea{min-height:100px}
+.points{font-size:1.6rem;font-weight:850;color:var(--green)}
+table{width:100%;border-collapse:collapse}th,td{border:1px solid #294861;padding:8px;vertical-align:top}th{background:#10243c}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tag{display:inline-block;padding:2px 7px;border-radius:6px;background:#1b3450;color:#cfeaff;font-size:.8rem}
+@media print{.top,.actions,.hintBtn{display:none!important}body{background:white;color:#111}.card,.mission,details,summary{background:white;color:#111;border-color:#bbb;box-shadow:none}.muted,small{color:#444!important}pre,code{background:#f5f5f5;color:#111}}
+</style>
+</head>
+<body>
+<div class="top"><div class="topin"><strong>Reverse CTF</strong><div class="progress"><div id="bar"></div></div><span id="prog">0 / 0</span></div></div>
+
+<header>
+<div class="kicker">FDSI · Guía alternativa · 2026-2</div>
+<h1>Reverse Engineering<br>Challenge Lab</h1>
+<p class="muted">No necesitas publicar ningún servicio. Todo ocurre sobre binarios compilados y objetivos deliberadamente vulnerables/autorizados.</p>
+<div class="badges">
+<span class="badge">🧩 ELF x86-64</span><span class="badge">🧠 Ghidra</span><span class="badge">🔬 strings / readelf / objdump</span>
+<span class="badge">🐞 GDB</span><span class="badge">🌐 Burp opcional</span><span class="badge">📦 GitHub evidence</span>
+</div>
+</header>
+
+<main>
+<section class="card warn">
+<h2>🚨 Alcance</h2>
+<p>Los binarios de esta práctica son <strong>crackmes académicos creados para ser analizados</strong>. No descargues ejecutables desconocidos ni hagas ingeniería inversa sobre software para el cual no tengas autorización. Si utilizas Burp, trabaja únicamente con los laboratorios de PortSwigger o aplicaciones locales asignadas por el docente.</p>
+</section>
+
+<section class="card info">
+<h2>🎯 La misión</h2>
+<div class="grid">
+<div class="mission"><h3>Nivel 1 · Recon</h3><p>Descubre cómo valida el programa una contraseña utilizando análisis estático básico. Obtén su FLAG.</p><span class="tag">Beginner</span></div>
+<div class="mission"><h3>Nivel 2 · Decompile</h3><p>La clave ya no aparece en texto plano. Reconstruye el algoritmo de validación con Ghidra y confirma dinámicamente con GDB.</p><span class="tag">Intermediate</span></div>
+<div class="mission"><h3>Boss · Stripped</h3><p>Repite el Nivel 2 usando la versión sin símbolos. Identifica funciones por comportamiento, referencias y flujo.</p><span class="tag">Challenge</span></div>
+</div>
+</section>
+
+<section class="card">
+<h2>0. Preparación · 10 puntos</h2>
+<p>Entorno recomendado: Kali Linux o Ubuntu x86-64. Los binarios entregados son ELF Linux x86-64.</p>
+<div class="actions">
+<a href="https://ghidra.re/ghidra_docs/GhidraClass/Beginner/Introduction_to_Ghidra_Student_Guide.html" target="_blank"><button>📘 Guía oficial Ghidra Beginner</button></a>
+<a href="https://github.com/NationalSecurityAgency/ghidra" target="_blank"><button>🧩 Ghidra oficial</button></a>
+</div>
+<pre>sudo apt update
+sudo apt install -y binutils gdb file
+# Ghidra: instalar desde la distribución oficial/aprobada por el docente.
+
+mkdir -p ~/fdsi-reverse/evidence
+cd ~/fdsi-reverse</pre>
+<label class="check"><input type="checkbox" data-p="2"><span>Copié los tres binarios al directorio de trabajo.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span>Ejecuté <code>file</code> para confirmar formato y arquitectura.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span>Calculé SHA-256 y lo registré en mi informe.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span>Creé <code>docs/evidence/reverse/</code> en mi repositorio GitHub.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span>No abrí ni solicité el código fuente del crackme.</span></label>
+</section>
+
+<section class="card">
+<h2>1. Baseline forense · 10 puntos</h2>
+<pre>file crackme_level1
+file crackme_level2
+file crackme_level2_stripped
+
+sha256sum crackme_level1 crackme_level2 crackme_level2_stripped
+
+readelf -h crackme_level1
+readelf -h crackme_level2</pre>
+<p><strong>Hashes esperados del material original:</strong></p>
+<table>
+<tr><th>Archivo</th><th>SHA-256</th></tr>
+<tr><td>crackme_level1</td><td><code>61e980febe84b1003b5a3b641468e915b984f7fdd835be9828af54233f88c68c</code></td></tr>
+<tr><td>crackme_level2</td><td><code>8dc5931dfbf74d7371de9ca9ed8cc57bfe0af4521346202dcd1c701dd8b6f4e5</code></td></tr>
+<tr><td>crackme_level2_stripped</td><td><code>c8e638741272a87ee3b30fe8878898c1aa977e6a879a1ec0b271034b5bb9aed3</code></td></tr>
+</table>
+<label class="check"><input type="checkbox" data-p="5"><span>Identifiqué arquitectura, formato, linking y presencia/ausencia de símbolos.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Expliqué por qué un hash ayuda a garantizar que todos analizan el mismo binario.</span></label>
+</section>
+
+<section class="card">
+<h2>2. Nivel 1 — “Strings are evidence” · 15 puntos</h2>
+<p>Primero ejecuta el programa con datos falsos. Después observa sin asumir.</p>
+<pre>chmod +x crackme_level1
+./crackme_level1
+./crackme_level1 prueba
+
+strings -n 5 crackme_level1 | less
+objdump -d -M intel crackme_level1 | less</pre>
+<label class="check"><input type="checkbox" data-p="3"><span>Identifiqué mensajes relevantes del binario.</span></label>
+<label class="check"><input type="checkbox" data-p="3"><span>Localicé una cadena que parece relacionada con autenticación/validación.</span></label>
+<label class="check"><input type="checkbox" data-p="3"><span>Probé mi hipótesis ejecutando el binario.</span></label>
+<label class="check"><input type="checkbox" data-p="3"><span>Obtuve la FLAG del Nivel 1 sin consultar el código fuente.</span></label>
+<label class="check"><input type="checkbox" data-p="3"><span>Documenté por qué <code>strings</code> puede revelar secretos embebidos.</span></label>
+<button class="hintBtn" onclick="toggleHint('h1')">💡 Pista progresiva</button>
+<div class="hint" id="h1">No busques la FLAG directamente. Busca primero qué dato compara el programa antes de llegar al camino de éxito.</div>
+</section>
+
+<section class="card">
+<h2>3. Nivel 2 — Ghidra: reconstruir la validación · 25 puntos</h2>
+<ol>
+<li>Crea un proyecto <strong>Non-Shared</strong> en Ghidra.</li>
+<li>Importa <code>crackme_level2</code>.</li>
+<li>Acepta el análisis automático.</li>
+<li>Ubica <code>main</code> y sigue la llamada que decide si la licencia es válida.</li>
+<li>Renombra variables y funciones según lo que deduzcas.</li>
+<li>Escribe pseudocódigo propio del algoritmo.</li>
+</ol>
+<pre># Complemento fuera de Ghidra
+strings -n 5 crackme_level2
+objdump -d -M intel crackme_level2 | less
+objdump -s -j .rodata crackme_level2 | less</pre>
+<label class="check"><input type="checkbox" data-p="5"><span>Localicé la función de validación desde <code>main</code>.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Identifiqué la longitud esperada de la clave.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Identifiqué la transformación aplicada a cada byte.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Reconstruí la clave correcta y obtuve la FLAG.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Guardé captura del decompilador con mis anotaciones/renombres.</span></label>
+<button class="hintBtn" onclick="toggleHint('h2a')">💡 Pista 1</button>
+<div class="hint" id="h2a">Compara el índice del carácter con el índice de un pequeño arreglo que se reutiliza cíclicamente.</div>
+<button class="hintBtn" onclick="toggleHint('h2b')">💡 Pista 2</button>
+<div class="hint" id="h2b">La operación central es reversible y trabaja byte a byte. Observa el operador que aparece antes de comparar el valor transformado con el arreglo esperado.</div>
+</section>
+
+<section class="card">
+<h2>4. Confirmación dinámica con GDB · 15 puntos</h2>
+<p>No se trata de “adivinar”; se trata de demostrar en ejecución que tu hipótesis está bien.</p>
+<pre>gdb ./crackme_level2
+
+# Dentro de GDB:
+set disassembly-flavor intel
+break validate_key
+run AAAA
+disassemble validate_key
+info registers
+continue
+quit</pre>
+<p>Después repite con tu clave candidata y observa cómo cambia el retorno de la función.</p>
+<label class="check"><input type="checkbox" data-p="5"><span>Detuve la ejecución en la rutina de validación.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Relacioné registros/instrucciones con el pseudocódigo de Ghidra.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Confirmé dinámicamente una clave fallida y una válida.</span></label>
+</section>
+
+<section class="card">
+<h2>5. Boss Level — binario sin símbolos · 10 puntos</h2>
+<p>Ahora abre <code>crackme_level2_stripped</code>. Ya no debes depender de nombres como <code>validate_key</code>.</p>
+<pre>file crackme_level2_stripped
+nm crackme_level2_stripped
+strings -n 5 crackme_level2_stripped
+objdump -d -M intel crackme_level2_stripped | less</pre>
+<label class="check"><input type="checkbox" data-p="5"><span>Expliqué qué información desapareció al hacer strip.</span></label>
+<label class="check"><input type="checkbox" data-p="5"><span>Encontré de nuevo la lógica de validación usando referencias y flujo de control.</span></label>
+</section>
+
+<section class="card good">
+<h2>6. Evidencia y entrega GitHub · 10 puntos</h2>
+<pre>docs/
+└── evidence/
+    └── reverse/
+        ├── baseline.txt
+        ├── level1.md
+        ├── level2.md
+        ├── gdb.md
+        └── screenshots/
+reverse-analysis.md
+README.md</pre>
+<label class="check"><input type="checkbox" data-p="2"><span><code>baseline.txt</code> contiene hashes, <code>file</code> y <code>readelf</code>.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span><code>level1.md</code> explica hipótesis → evidencia → resultado.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span><code>level2.md</code> contiene pseudocódigo propio, no código decompilado copiado sin explicación.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span><code>gdb.md</code> demuestra la validación dinámica.</span></label>
+<label class="check"><input type="checkbox" data-p="2"><span>Creé tag <code>lab-reverse-v1</code>.</span></label>
+</section>
+
+<section class="card info">
+<h2>🌐 Módulo opcional — 20–30 min con Burp Suite</h2>
+<p><strong>Burp no reemplaza a Ghidra:</strong> Burp analiza tráfico HTTP; Ghidra/GDB analizan el binario. Para incorporar Burp sin depender de publicar servicios, usa exclusivamente los laboratorios deliberadamente vulnerables de PortSwigger Web Security Academy.</p>
+<p>Ruta sugerida: abre el tutorial oficial, mira los videos de introducción y practica únicamente <strong>Proxy → Intercept → Repeater</strong> sobre el laboratorio asignado.</p>
+<div class="actions">
+<a href="https://portswigger.net/burp/documentation/desktop/getting-started" target="_blank"><button>Burp Getting Started</button></a>
+<a href="https://portswigger.net/web-security/getting-started" target="_blank"><button>Academy + videos</button></a>
+</div>
+<ol>
+<li>Inicia Burp Community.</li>
+<li>Usa el navegador integrado de Burp.</li>
+<li>Abre únicamente el laboratorio de Academy asignado.</li>
+<li>Intercepta una petición.</li>
+<li>Envíala a Repeater.</li>
+<li>Cambia un parámetro inocuo y observa request/response.</li>
+<li>Captura evidencia y explica qué diferencia hay entre análisis web y reverse engineering.</li>
+</ol>
+</section>
+
+<section class="card">
+<h2>🧠 Preguntas de análisis</h2>
+<textarea id="questions">1. ¿Qué información pudiste obtener sin ejecutar el binario?
+2. ¿Por qué una contraseña compilada como string es un diseño inseguro?
+3. ¿Qué cambió entre crackme_level2 y crackme_level2_stripped?
+4. ¿Qué ventaja tuvo Ghidra sobre objdump?
+5. ¿Qué confirmó GDB que el análisis estático por sí solo no demostraba?
+6. ¿Por qué Burp Suite no es una herramienta de ingeniería inversa de binarios?
+7. ¿Qué controles de desarrollo evitarían embebidos inseguros de secretos en software real?</textarea>
+</section>
+
+<section class="card">
+<h2>🏆 Puntuación</h2>
+<p class="points"><span id="score">0</span> / 95 puntos base</p>
+<p class="muted">El módulo Burp es bono/actividad complementaria y no afecta el progreso automático del crackme.</p>
+<div class="actions">
+<button onclick="exportState()">⬇ Exportar progreso JSON</button>
+<button onclick="window.print()">🖨 Guardar como PDF</button>
+<button onclick="resetAll()">↺ Reiniciar</button>
+</div>
+</section>
+
+<section class="card">
+<h2>🎤 Cierre de 3 minutos por equipo</h2>
+<p>Sin mostrar únicamente pantallazos. El equipo debe poder explicar:</p>
+<ol>
+<li><strong>Qué observó</strong> inicialmente.</li>
+<li><strong>Qué hipótesis</strong> formuló.</li>
+<li><strong>Qué función o condición</strong> encontró.</li>
+<li><strong>Cómo la confirmó</strong> en ejecución.</li>
+<li><strong>Qué enseñanza de desarrollo seguro</strong> extrae del crackme.</li>
+</ol>
+</section>
+
+<footer class="muted">
+<p>Uso académico autorizado · FDSI · Los retos incluidos no contienen malware, persistencia ni funcionalidad destructiva.</p>
+</footer>
+</main>
+
+<script>
+const KEY='fdsi-reverse-ctf-v2';
+const checks=[...document.querySelectorAll('input[type=checkbox][data-p]')];
+function update(){
+ let score=0,done=0;
+ checks.forEach(c=>{if(c.checked){score+=Number(c.dataset.p);done++;}});
+ document.getElementById('score').textContent=score;
+ document.getElementById('prog').textContent=`${done} / ${checks.length}`;
+ document.getElementById('bar').style.width=((done/checks.length)*100)+'%';
+ localStorage.setItem(KEY,JSON.stringify(checks.map(c=>c.checked)));
+}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'[]');s.forEach((v,i)=>{if(checks[i])checks[i].checked=v})}catch(e){} update();}
+function toggleHint(id){const e=document.getElementById(id);e.style.display=e.style.display==='block'?'none':'block';}
+function resetAll(){if(confirm('¿Reiniciar progreso?')){localStorage.removeItem(KEY);checks.forEach(c=>c.checked=false);update();}}
+function exportState(){
+ const out={exported_at:new Date().toISOString(),score:Number(score.textContent),items:checks.map((c,i)=>({item:i+1,done:c.checked,points:Number(c.dataset.p)}))};
+ const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='FDSI_reverse_progress.json';a.click();URL.revokeObjectURL(a.href);
+}
+checks.forEach(c=>c.addEventListener('change',update)); load();
+</script>
+</body>
+</html>
