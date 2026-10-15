@@ -77,3 +77,37 @@ Nota: en el listado de ensamblador Ghidra reutiliza el nombre `result` para el r
 EAX/RAX porque comparte almacenamiento con esa variable; es solo cosmético.
 
 Captura: `screenshots/08-level2-ghidra-anotado.png`
+## Boss Level — binario sin símbolos (crackme_level2_stripped)
+
+### Qué información desapareció al hacer strip
+- `file`: pasó de "with debug_info, not stripped" a "stripped".
+- `nm`: ya no lista `validate_key`, `main` ni `expected.0` ("no symbols").
+- `readelf -S`: ya no existen `.symtab` ni las secciones `.debug_*`.
+- Se perdieron nombres de funciones y variables (`validate_key`, `k.1`, `expected.0`), líneas de código y la ruta del `.c`.
+- Se conservan: el código, `.rodata`, las cadenas, los símbolos dinámicos de libc (`strlen`, `puts`, `printf`, `putchar`).
+- Tamaño: 18200 bytes (con símbolos) frente a 14424 bytes (stripped).
+
+### Cómo recuperé la lógica de validación
+1. `strings`: siguen apareciendo `License accepted.`, `Invalid license.` y `Uso: %s <license-key>`.
+2. En `_start`, `mov rdi,0x401267` justo antes de `call __libc_start_main` indica que `main` está en `0x401267`.
+3. En `main`: con argc == 2 prepara `argv[1]`, ejecuta `call 0x401156`, luego `test eax,eax; je 4012f1`. Si es 0 imprime "Invalid license." y sale con 3; si no, imprime "License accepted." y llama a `0x4011f3` (rutina que imprime la FLAG con XOR 0x37).
+4. La función `0x401156` es la validación: compara `strlen` con 0x11 (17), recorre los bytes, aplica XOR con una tabla de 4 bytes en `0x40208b` (índice `i & 3`) y compara con el arreglo esperado en `0x402090`. Acumula las diferencias con OR y devuelve `diff == 0`.
+5. Comparé el desensamblado de `0x401156` en ambos binarios: las instrucciones son idénticas; solo desaparecen las etiquetas (`validate_key`, `k.1`, `expected.0`).
+
+### Pseudocódigo recuperado
+
+    int validar(char *clave) {
+        if (strlen(clave) != 17) return 0;
+        int diff = 0;
+        for (size_t i = 0; i < 17; i++) {
+            unsigned char t = clave[i] ^ tabla[i & 3];
+            diff |= esperado[i] ^ t;
+        }
+        return diff == 0;
+    }
+
+### Prueba
+`./crackme_level2_stripped FDSI-REVERSE-2026` -> `License accepted.` y `FLAG{ghidra_plus_gdb}`.
+
+### Conclusión
+Quitar símbolos no oculta la lógica: dificulta la lectura, pero las referencias a cadenas, las llamadas a libc y el flujo de control permiten reconstruirla.
