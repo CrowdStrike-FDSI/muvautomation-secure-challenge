@@ -1,0 +1,25 @@
+Breakpoint 1 at 0x401162: file /mnt/data/reverse_fsi_lab/crackme_level2.c, line 10.
+Starting program: /home/fdsi-2026/Projects/muvautomation-secure-challenge/fdsi-reverse/crackme_level2 AAAA
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, validate_key (candidate=0x7fffffffdd7a "AAAA") at /mnt/data/reverse_fsi_lab/crackme_level2.c:10
+⚠️ warning: 10	/mnt/data/reverse_fsi_lab/crackme_level2.c: No such file or directory
+#0  validate_key (candidate=0x7fffffffdd7a "AAAA") at /mnt/data/reverse_fsi_lab/crackme_level2.c:10
+#1  0x00000000004012d2 in main (argc=2, argv=0x7fffffffd9b8) at /mnt/data/reverse_fsi_lab/crackme_level2.c:36
+0x7fffffffdd7a:	"AAAA"
+Breakpoint 2 at 0x401176: file /mnt/data/reverse_fsi_lab/crackme_level2.c, line 11.
+Continuing.
+
+Breakpoint 2, 0x0000000000401176 in validate_key (candidate=0x7fffffffdd7a "AAAA") at /mnt/data/reverse_fsi_lab/crackme_level2.c:11
+11	in /mnt/data/reverse_fsi_lab/crackme_level2.c
+rax            0x4                 4
+0x7fffffffd868:	0x0000000000000011
+0x000000000040117a	11	in /mnt/data/reverse_fsi_lab/crackme_level2.c
+eflags         0x212               [ AF IF ]
+Run till exit from #0  0x000000000040117a in validate_key (candidate=0x7fffffffdd7a "AAAA") at /mnt/data/reverse_fsi_lab/crackme_level2.c:11
+0x00000000004012d2 in main (argc=2, argv=0x7fffffffd9b8) at /mnt/data/reverse_fsi_lab/crackme_level2.c:36
+36	in /mnt/data/reverse_fsi_lab/crackme_level2.c
+Value returned is $1 = 0
+Continuing.
+[Inferior 1 (process 358682) exited with code 03]

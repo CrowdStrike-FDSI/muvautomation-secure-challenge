@@ -1,0 +1,50 @@
+Breakpoint 1 at 0x401162: file /mnt/data/reverse_fsi_lab/crackme_level2.c, line 10.
+Breakpoint 2 at 0x401176: file /mnt/data/reverse_fsi_lab/crackme_level2.c, line 11.
+Breakpoint 3 at 0x4011d5: file /mnt/data/reverse_fsi_lab/crackme_level2.c, line 16.
+Type commands for breakpoint(s) 3, one per line.
+End with a line saying just "end".
+Breakpoint 4 at 0x4011e7: file /mnt/data/reverse_fsi_lab/crackme_level2.c, line 18.
+Starting program: /home/fdsi-2026/Projects/muvautomation-secure-challenge/fdsi-reverse/crackme_level2 FDSI-REVERSE-2026
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, validate_key (candidate=0x7fffffffdd60 "FDSI-REVERSE-2026") at /mnt/data/reverse_fsi_lab/crackme_level2.c:10
+⚠️ warning: 10	/mnt/data/reverse_fsi_lab/crackme_level2.c: No such file or directory
+0x7fffffffdd60:	"FDSI-REVERSE-2026"
+Continuing.
+
+Breakpoint 2, 0x0000000000401176 in validate_key (candidate=0x7fffffffdd60 "FDSI-REVERSE-2026") at /mnt/data/reverse_fsi_lab/crackme_level2.c:11
+11	in /mnt/data/reverse_fsi_lab/crackme_level2.c
+rax            0x11                17
+Continuing.
+idx=0  eax=0x0
+idx=1  eax=0x0
+idx=2  eax=0x0
+idx=3  eax=0x0
+idx=4  eax=0x0
+idx=5  eax=0x0
+idx=6  eax=0x0
+idx=7  eax=0x0
+idx=8  eax=0x0
+idx=9  eax=0x0
+idx=10  eax=0x0
+idx=11  eax=0x0
+idx=12  eax=0x0
+idx=13  eax=0x0
+idx=14  eax=0x0
+idx=15  eax=0x0
+idx=16  eax=0x0
+
+Breakpoint 4, validate_key (candidate=0x7fffffffdd60 "FDSI-REVERSE-2026") at /mnt/data/reverse_fsi_lab/crackme_level2.c:18
+18	in /mnt/data/reverse_fsi_lab/crackme_level2.c
+0x7fffffffd85c:	0x00000000
+0x402090 <expected.0>:	0x65	0x15	0x44	0x23	0x0e	0x03	0x52	0x3c
+0x402098 <expected.0+8>:	0x66	0x03	0x44	0x2f	0x0e	0x63	0x27	0x58
+0x4020a0 <expected.0+16>:	0x15
+0x40208b <k.1>:	0x23	0x51	0x17	0x6a
+Run till exit from #0  validate_key (candidate=0x7fffffffdd60 "FDSI-REVERSE-2026") at /mnt/data/reverse_fsi_lab/crackme_level2.c:18
+0x00000000004012d2 in main (argc=2, argv=0x7fffffffd998) at /mnt/data/reverse_fsi_lab/crackme_level2.c:36
+36	in /mnt/data/reverse_fsi_lab/crackme_level2.c
+Value returned is $1 = 1
+Continuing.
+[Inferior 1 (process 362943) exited normally]
