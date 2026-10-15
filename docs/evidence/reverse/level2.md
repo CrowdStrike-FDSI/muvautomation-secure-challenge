@@ -57,3 +57,23 @@ y un XOR reversible. Una validación basada en una operación reversible con dat
 embebidos no protege el secreto, porque cualquiera con el binario puede invertirla.
 Además, los símbolos y la información de depuración (`validate_key`, `reveal_flag`,
 `expected`, `score`) y la ruta del fuente facilitaron la lectura.
+## Casilla 5: decompilado anotado en Ghidra
+Renombres aplicados en `validate_key`:
+
+| Original | Renombrado | Significado |
+|---|---|---|
+| `candidate` | `input_key` | clave introducida por el usuario |
+| `sVar2` | `input_len` | resultado de `strlen` (debe ser 0x11 = 17) |
+| `uVar1` | `result` | valor de retorno (1 = válida, 0 = inválida) |
+| `transformed` | `xored` | valor intermedio generado por el compilador |
+| `score` | `diff_acc` | acumulador de diferencias (0 = todo coincide) |
+| `i` | `idx` | índice del bucle (0..16) |
+
+Comentarios añadidos:
+- Sobre `if (input_len == 0x11)`: la clave debe medir exactamente 17 caracteres.
+- Sobre el bucle: `expected[idx] ^ k[idx & 3] ^ input_key[idx]` debe ser 0 en cada byte.
+
+Nota: en el listado de ensamblador Ghidra reutiliza el nombre `result` para el registro
+EAX/RAX porque comparte almacenamiento con esa variable; es solo cosmético.
+
+Captura: `screenshots/08-level2-ghidra-anotado.png`
