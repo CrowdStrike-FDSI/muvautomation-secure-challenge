@@ -5,6 +5,16 @@
   `validate_key` y `reveal_flag`.
 - `strings` muestra `Uso: %s <license-key>`, `License accepted.` e `Invalid license.`
 
+![strings sobre crackme_level2](screenshots/21-level2-strings.png)
+
+![nm con los nombres de funciones](screenshots/22-level2-nm-funciones.png)
+
+![Nuevo proyecto en Ghidra](screenshots/16-level2-ghidra-nuevo-proyecto.png)
+
+![Importación de crackme_level2](screenshots/17-level2-ghidra-import-crackme_level2.png)
+
+![CodeBrowser antes del análisis](screenshots/18-level2-ghidra-codebrowser-sin-analizar.png)
+
 ## Casilla 1: función de validación desde `main`
 - `main` en `0x401267`; `validate_key` en `0x401156`; `reveal_flag` en `0x4011f3`.
 - Decompilado de Ghidra: `if (argc == 2) { iVar1 = validate_key(argv[1]); ... }`
@@ -15,6 +25,12 @@
   - `4012d2`: `test eax,eax`
   - `4012d4`: `je 4012f1`, salta a la rama de error si eax == 0
   - `4012e5`: `call reveal_flag`, solo se alcanza si la validación pasó
+
+![Decompilado de main en Ghidra](screenshots/19-level2-ghidra-main-decompilado.png)
+
+![objdump de main y la llamada a validate_key](screenshots/20-level2-objdump-main-validate_key.png)
+
+![Documento level2.md con la casilla 1](screenshots/23-level2-doc-casilla1-level2md.png)
 ## Casilla 2: longitud esperada de la clave
 - Decompilado de `validate_key`: `strlen(candidate) == 0x11`, es decir, **17 caracteres**.
 - El bucle `for (i = 0; i < 0x11; i++)` recorre exactamente 17 posiciones.
@@ -22,6 +38,10 @@
   (`nm -S crackme_level2 | grep expected`).
 - Si la longitud no es 17, la función devuelve 0 sin comparar nada
   (`Invalid license.`).
+
+![validate_key original en Ghidra](screenshots/24-level2-ghidra-validate_key-original.png)
+
+![Longitud de expected con nm y strlen](screenshots/25-level2-longitud-nm-expected-strlen.png)
 ## Casilla 3: transformación aplicada a cada byte
 - Operador: **XOR** byte a byte.
 - Cuerpo del bucle (ensamblador de `validate_key`):
@@ -37,6 +57,10 @@
 - La licencia es válida solo si `score == 0`, es decir, si para las 17 posiciones
   `candidate[i] ^ k[i & 3] == expected[i]`.
 - Como XOR es reversible, la inversa es `candidate[i] = expected[i] ^ k[i & 3]`.
+
+![Decompilado de validate_key en nano](screenshots/26-level2-nano-decompilado-validate_key.png)
+
+![Datos de rodata, arreglos expected y k, y XOR](screenshots/27-level2-rodata-expected-k-y-xor.png)
 ## Casilla 4: clave reconstruida y FLAG
 - Script: `docs/evidence/reverse/solver_level2.py`
   (aplica `candidate[i] = expected[i] ^ k[i & 3]` sobre los 17 bytes).
@@ -50,6 +74,12 @@
 - Prueba positiva: `./crackme_level2 'FDSI-REVERSE-2026'`
   → License accepted.
   → FLAG: `FLAG{ghidra_plus_gdb}`
+
+![Script solver_level2.py](screenshots/28-level2-solver-script.png)
+
+![Resultado del solver](screenshots/29-level2-solver-resultado.png)
+
+![Ejecución con la clave válida y FLAG del Nivel 2](screenshots/29b-level2-ejecucion-clave-valida-flag.png)
 
 ## Reflexión de desarrollo seguro
 La clave se dedujo solo con análisis estático: dos arreglos constantes en `.rodata`
@@ -76,7 +106,9 @@ Comentarios añadidos:
 Nota: en el listado de ensamblador Ghidra reutiliza el nombre `result` para el registro
 EAX/RAX porque comparte almacenamiento con esa variable; es solo cosmético.
 
-Captura: `screenshots/08-level2-ghidra-anotado.png`
+Captura: `screenshots/30-level2-ghidra-anotado.png`
+
+![Decompilador de validate_key con renombres y comentarios](screenshots/30-level2-ghidra-anotado.png)
 ## Boss Level — binario sin símbolos (crackme_level2_stripped)
 
 ### Qué información desapareció al hacer strip
@@ -87,12 +119,24 @@ Captura: `screenshots/08-level2-ghidra-anotado.png`
 - Se conservan: el código, `.rodata`, las cadenas, los símbolos dinámicos de libc (`strlen`, `puts`, `printf`, `putchar`).
 - Tamaño: 18200 bytes (con símbolos) frente a 14424 bytes (stripped).
 
+![file y nm, comparación con y sin símbolos](screenshots/33-boss-file-nm-simbolos-comparacion.png)
+
+![strings sobre el binario stripped](screenshots/34-boss-strings-stripped.png)
+
 ### Cómo recuperé la lógica de validación
 1. `strings`: siguen apareciendo `License accepted.`, `Invalid license.` y `Uso: %s <license-key>`.
 2. En `_start`, `mov rdi,0x401267` justo antes de `call __libc_start_main` indica que `main` está en `0x401267`.
 3. En `main`: con argc == 2 prepara `argv[1]`, ejecuta `call 0x401156`, luego `test eax,eax; je 4012f1`. Si es 0 imprime "Invalid license." y sale con 3; si no, imprime "License accepted." y llama a `0x4011f3` (rutina que imprime la FLAG con XOR 0x37).
 4. La función `0x401156` es la validación: compara `strlen` con 0x11 (17), recorre los bytes, aplica XOR con una tabla de 4 bytes en `0x40208b` (índice `i & 3`) y compara con el arreglo esperado en `0x402090`. Acumula las diferencias con OR y devuelve `diff == 0`.
 5. Comparé el desensamblado de `0x401156` en ambos binarios: las instrucciones son idénticas; solo desaparecen las etiquetas (`validate_key`, `k.1`, `expected.0`).
+
+![Inicio del desensamblado del stripped](screenshots/35-boss-objdump-stripped-inicio.png)
+
+![main del stripped con la llamada a la rutina de la FLAG](screenshots/36-boss-objdump-stripped-main-reveal_flag.png)
+
+![Función de validación en el stripped](screenshots/37-boss-objdump-stripped-validate_key.png)
+
+![Comparación del desensamblado entre ambos binarios](screenshots/38-boss-objdump-level2-validate_key-comparacion.png)
 
 ### Pseudocódigo recuperado
 
@@ -108,6 +152,8 @@ Captura: `screenshots/08-level2-ghidra-anotado.png`
 
 ### Prueba
 `./crackme_level2_stripped FDSI-REVERSE-2026` -> `License accepted.` y `FLAG{ghidra_plus_gdb}`.
+
+![Ejecución del stripped con la FLAG](screenshots/39-boss-ejecucion-stripped-flag.png)
 
 ### Conclusión
 Quitar símbolos no oculta la lógica: dificulta la lectura, pero las referencias a cadenas, las llamadas a libc y el flujo de control permiten reconstruirla.

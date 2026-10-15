@@ -4,6 +4,8 @@
 - Sin argumentos: `Uso: ./crackme_level1 <password>` (el programa espera la contraseña como argumento).
 - Con `prueba`: `Access denied.`
 
+![Ejecución sin clave y con acceso denegado](screenshots/11-level1-ejecucion-sin-clave-y-denied.png)
+
 ## Hipótesis
 En la salida de `strings -n 5 crackme_level1` aparece la cadena `REDTEAM-101` justo antes de los mensajes del programa (`Access granted.` / `Access denied.`), y el binario importa `strcmp`. Hipótesis: `REDTEAM-101` es la contraseña embebida y el programa la compara con la entrada del usuario.
 
@@ -30,12 +32,20 @@ En la salida de `strings -n 5 crackme_level1` aparece la cadena `REDTEAM-101` ju
 
 **Observación adicional:** `print_flag` no guarda la FLAG como texto. La reconstruye byte a byte con una operación XOR (clave 0x5a) antes de llamar a `putchar`, por eso `FLAG{...}` no aparece en `strings`. La contraseña sí aparece, porque se compara como cadena normal.
 
+![strings sobre crackme_level1](screenshots/12-level1-strings.png)
+
+![objdump de main con la llamada a strcmp](screenshots/14-level1-objdump-main-strcmp.png)
+
+![objdump de print_flag con el XOR](screenshots/13-level1-objdump-print_flag-xor.png)
+
 ## Resultado
 - Clave: `REDTEAM-101`
 - Comando: `./crackme_level1 REDTEAM-101`
 - Salida: `Access granted.`
 - FLAG: `FLAG{strings_are_evidence}`
-- Capturas: screenshots/ (pendiente de agregar)
+- Captura del resultado abajo, el resto de capturas están en screenshots/
+
+![Acceso concedido y FLAG del Nivel 1](screenshots/15-level1-acceso-concedido-flag.png)
 
 ## ¿Por qué strings puede revelar secretos embebidos?
 Un literal del código fuente (aquí, la contraseña) se guarda tal cual en la sección `.rodata` del ejecutable. `strings` extrae cualquier secuencia de caracteres legibles del archivo sin ejecutarlo y sin necesitar símbolos ni el código fuente. Además filtra metadatos del compilador, como la versión de GCC y la ruta del archivo original. Una contraseña compilada como string es un diseño inseguro porque cualquiera con acceso al binario puede recuperarla en segundos.
