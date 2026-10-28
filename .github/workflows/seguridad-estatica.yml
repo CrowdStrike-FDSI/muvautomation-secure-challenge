@@ -1,11 +1,14 @@
 name: Seguridad estática - SAST y secretos
+
 on:
   push:
     branches: [main, master]
   pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   sast:
     name: Semgrep (SAST)
@@ -26,6 +29,7 @@ jobs:
           name: resultado-semgrep
           path: semgrep.json
           if-no-files-found: warn
+
   secretos:
     name: Gitleaks (secret scanning)
     runs-on: ubuntu-latest
@@ -37,4 +41,4 @@ jobs:
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # En repositorios de organizaciones puede requerirse GITLEAKS_LICENSE.
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
