@@ -1,0 +1,4 @@
+bcrypt==5.0.0
+Flask-Bcrypt==1.0.1
+pydantic==2.12.5
+pydantic_core==2.41.5
