@@ -10,12 +10,13 @@ Resuelve del risk-register.md (Lab 3):
   - R10 (Elevation of Privilege): control de acceso por rol
     (viewer = solo lectura, analyst = lectura + escritura).
 
-Nota pedagogica: usuarios y SECRET_KEY estan hardcodeados para el
-laboratorio academico. En produccion, SECRET_KEY debe venir de una
-variable de entorno / secret manager, y los usuarios de una base de
-datos con hashes unicos por despliegue.
+Nota pedagogica: los usuarios demo siguen definidos en el codigo (hallazgo
+F-02, pendiente). SECRET_KEY ya se lee de la variable de entorno (F-01,
+Lab 5); en produccion los usuarios deben venir de una base de datos con
+hashes unicos por despliegue.
 """
 
+import os
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
@@ -26,8 +27,9 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 
 # --- Configuracion JWT ---
-# En produccion: mover a variable de entorno (os.environ["SECRET_KEY"])
-SECRET_KEY = "lab3-parte2-falcon-incident-hub-CAMBIAR-EN-PRODUCCION-2026"
+# F-01 (Lab 5): la clave ya no vive en el repo. Si SECRET_KEY no esta definida
+# el servicio falla al arrancar (KeyError) en vez de usar un valor por defecto.
+SECRET_KEY = os.environ["SECRET_KEY"]
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
