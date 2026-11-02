@@ -4,9 +4,11 @@ name: DAST pasivo - app local en el runner
 # EFIMEROS y la analiza con OWASP ZAP en modo pasivo (-S: sin ataques activos).
 # No toca ningun sistema externo: es la alternativa "baseline local" del Lab 5.
 on:
-  workflow_dispatch:
+  workflow_dispatch:          # ejecucion manual desde Actions (funciona al estar en main)
   push:
-    branches: [fix/lab-fsi-remediacion]
+    branches: [main]          # corre en cada push/merge a main
+  pull_request:
+    branches: [main]          # y en los PR que apuntan a main
 
 permissions:
   contents: read
@@ -78,6 +80,7 @@ jobs:
         with:
           name: informe-zap-local
           path: |
-            reports/
+            reports/zap-report.html
+            reports/zap-report.json
             uvicorn.log
           if-no-files-found: warn
