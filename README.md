@@ -451,6 +451,20 @@ Pasó de 2 límites de confianza (tránsito de red, proxy→aplicación) a 4: se
 
 ---
 
+## 🔐 Laboratorio 5 — Seguridad en el ciclo de desarrollo (SAST, secretos, SCA, DAST)
+
+[![Seguridad estática](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/seguridad-estatica.yml/badge.svg)](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/seguridad-estatica.yml)
+[![Pruebas de regresión](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/pruebas.yml/badge.svg)](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/pruebas.yml)
+
+- [Informe de seguridad](docs/SECURITY.md) — alcance, herramientas, hallazgos y validación antes/después.
+- [Informe técnico de hallazgos](docs/REPORTE_HALLAZGOS.md) — hallazgos F-01 a F-09, estado de remediación y reflexión.
+- [Checklist del Pull Request](docs/CHECKLIST_PR.md).
+- Workflows: `seguridad-estatica.yml` (Semgrep + Gitleaks), CodeQL (Default setup), `dast-staging.yml` (ZAP baseline manual), `pruebas.yml` (pytest).
+- Correcciones del PR: **F-01** (`SECRET_KEY` desde el entorno), **F-02** (usuarios y hashes desde `APP_USERS`), **F-03** (acciones fijadas a SHA) y **F-04** (`$server_name` en Nginx), con pruebas de regresión en `tests/`.
+- Variables de entorno requeridas por la API: `SECRET_KEY` y `APP_USERS` (ver `docs/SECURITY.md` §4.1).
+
+---
+
 ## 🤖 Uso responsable de IA
 
 La IA se emplea como **copiloto analítico**, nunca como autoridad. Todo hallazgo se valida contra comandos, logs, PCAP o configuración real. No se comparten IP reales, PCAP completos ni datos sensibles; toda evidencia se anonimiza antes de su uso.
