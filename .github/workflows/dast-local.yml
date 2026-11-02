@@ -5,6 +5,8 @@ name: DAST pasivo - app local en el runner
 # No toca ningun sistema externo: es la alternativa "baseline local" del Lab 5.
 on:
   workflow_dispatch:
+  push:
+    branches: [fix/lab-fsi-remediacion]
 
 permissions:
   contents: read
