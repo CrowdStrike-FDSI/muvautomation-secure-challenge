@@ -1,5 +1,7 @@
 # Seguridad del proyecto — evidencia del laboratorio
 
+> **Actualización 01-nov-2026:** se preparó el Pull Request de remediación (rama `fix/lab-fsi-remediacion`) que corrige F-01, F-02, F-03 y F-04 con pruebas de regresión; ver §4.1. Lo marcado **[COMPLETAR]** depende de pasos en GitHub o en el servidor.
+>
 > **Fase 1: foto actual (análisis estático).** Solo se leyó el código del repositorio: no se desplegó, no se ejecutaron pruebas ni se instalaron las dependencias del proyecto. DAST y pentest quedan para la fase 2.
 
 ## 1. Alcance autorizado
@@ -21,7 +23,7 @@ Fecha de la línea base: 28-oct-2026.
 | Revisión manual de `app/main.py` y `nginx/muvautomation.conf` | SAST manual | 28-oct-2026 | 6 hallazgos adicionales que Semgrep no detecta (F-02, F-05, F-06, F-07, F-08 y F-09) | Este documento |
 | Gitleaks | Secretos | 28-oct-2026 | Job ejecutado y en verde con `GITLEAKS_LICENSE`. [Pegar aquí el resultado del log: "no leaks found" o la lista] | Log del job "Gitleaks (secret scanning)" |
 | Búsqueda manual en el historial de git (26 commits) | Secretos | 28-oct-2026 | Sin llaves privadas, archivos `.env` ni tokens reales. La clave del JWT y las contraseñas demo sí están en el código (ver F-01 y F-02). | Este documento |
-| Dependabot / `pip-audit` | SCA | [fecha] | [Pendiente: depende de `requirements.txt`. Pegar el resultado de `sca.json`] | `sca.json` / pestaña Security → Dependabot |
+| Dependabot / `pip-audit` | SCA | 01-nov-2026 | `pip-audit` sobre `requirements.txt`: 0 vulnerabilidades en los 4 paquetes fijados (`sca.json`). **Ojo (F-05):** la lista está incompleta, así que «0 vulnerabilidades» no cubre FastAPI, python-jose ni passlib. Dependabot: [COMPLETAR] | `sca.json` / pestaña Security → Dependabot |
 | CodeQL default setup | SAST | [fecha] | [Pendiente: confirmar si se activó] | Pestaña Security → Code scanning |
 | OWASP ZAP Baseline | DAST pasivo | — | Fase 2 | — |
 
@@ -32,11 +34,11 @@ Escala de severidad unificada: Critical, High, Medium, Low. Semgrep reporta ERRO
 
 | ID | Categoría | Descripción sin secretos | Riesgo | Archivo/ruta | Cambio propuesto | Estado |
 |---|---|---|---|---|---|---|
-| F-01 | CWE-798 / CWE-522 (A07 Fallas de identificación y autenticación) | La clave que firma los JWT (`SECRET_KEY`) está escrita en el código y publicada en un repositorio público. Quien la lea puede fabricar un token con rol `analyst`. Detectado por Semgrep (`jwt-python-hardcoded-secret`) y por revisión manual. | **Critical** | `app/main.py` (línea 124 según Semgrep; definición hacia la línea 30) | Leer la clave con `os.environ["SECRET_KEY"]` (la app no arranca si falta), generar una clave nueva y **rotarla** en el servidor mediante systemd. La clave anterior queda en el historial de git y debe considerarse comprometida. | Abierto |
-| F-02 | CWE-798 (A07) | Usuarios demo (`oscar`, `robinson`, `auditor`) con contraseñas de laboratorio visibles en el código y en comentarios. Semgrep no lo detectó; sale de la revisión manual. | **High** | `app/main.py` (bloque `fake_users_db`) | Quitar contraseñas del código y de los comentarios, cargar usuarios y hashes desde variables de entorno y cambiar las contraseñas actuales. | Abierto |
-| F-03 | CWE-1357 / CWE-353 (A08 Fallas de integridad de software) | Los workflows usan acciones de GitHub por etiqueta mutable (`@v3`, `@v4`, `@v5`) en lugar de un SHA de commit. 6 ocurrencias detectadas por Semgrep. | **Medium** | `.github/workflows/seguridad-estatica.yml` (líneas 17, 18, 27, 37, 41) y `.github/workflows/dast-staging.yml` (línea 33) | Fijar cada `uses:` a su SHA de 40 caracteres, dejando la versión como comentario. | Abierto |
-| F-04 | CWE-290 (A07) | Nginx usa `$host`, que proviene de la cabecera Host controlada por el cliente (redirección y `proxy_set_header`). 3 ocurrencias detectadas por Semgrep. | **Medium** | `nginx/muvautomation.conf` (líneas 21, 64, 72) | Sustituir `$host` por `$server_name` (o por el nombre de host fijo). | Abierto |
-| F-05 | CWE-1104 (A06 Componentes vulnerables y desactualizados) | El repositorio no tiene archivo de dependencias, por lo que no se pueden fijar versiones ni hacer SCA. Se usan bibliotecas con riesgo conocido (`python-jose`, `passlib`); verificar versiones al fijarlas. | **Medium** | raíz del repositorio | Crear `requirements.txt` con versiones fijas tomadas del servidor y ejecutar `pip-audit` y Dependabot. | Abierto |
+| F-01 | CWE-798 / CWE-522 (A07 Fallas de identificación y autenticación) | La clave que firma los JWT (`SECRET_KEY`) está escrita en el código y publicada en un repositorio público. Quien la lea puede fabricar un token con rol `analyst`. Detectado por Semgrep (`jwt-python-hardcoded-secret`) y por revisión manual. | **Critical** | `app/main.py` (línea 124 según Semgrep; definición hacia la línea 30) | Leer la clave con `os.environ["SECRET_KEY"]` (la app no arranca si falta), generar una clave nueva y **rotarla** en el servidor mediante systemd. La clave anterior queda en el historial de git y debe considerarse comprometida. | **Corregido en PR** (falta rotar la clave en el servidor) |
+| F-02 | CWE-798 (A07) | Usuarios demo (`oscar`, `robinson`, `auditor`) con contraseñas de laboratorio visibles en el código y en comentarios. Semgrep no lo detectó; sale de la revisión manual. | **High** | `app/main.py` (bloque `fake_users_db`) | Quitar contraseñas del código y de los comentarios, cargar usuarios y hashes desde variables de entorno y cambiar las contraseñas actuales. | **Corregido en PR** (falta cargar `APP_USERS` y cambiar contraseñas en el servidor) |
+| F-03 | CWE-1357 / CWE-353 (A08 Fallas de integridad de software) | Los workflows usan acciones de GitHub por etiqueta mutable (`@v3`, `@v4`, `@v5`) en lugar de un SHA de commit. 6 ocurrencias detectadas por Semgrep. | **Medium** | `.github/workflows/seguridad-estatica.yml` (líneas 17, 18, 27, 37, 41) y `.github/workflows/dast-staging.yml` (línea 33) | Fijar cada `uses:` a su SHA de 40 caracteres, dejando la versión como comentario. | **Corregido en PR** |
+| F-04 | CWE-290 (A07) | Nginx usa `$host`, que proviene de la cabecera Host controlada por el cliente (redirección y `proxy_set_header`). 3 ocurrencias detectadas por Semgrep. | **Medium** | `nginx/muvautomation.conf` (líneas 21, 64, 72) | Sustituir `$host` por `$server_name` (o por el nombre de host fijo). | **Corregido en PR** (validar con `nginx -t` en el servidor) |
+| F-05 | CWE-1104 (A06 Componentes vulnerables y desactualizados) | El repositorio no tiene archivo de dependencias, por lo que no se pueden fijar versiones ni hacer SCA. Se usan bibliotecas con riesgo conocido (`python-jose`, `passlib`); verificar versiones al fijarlas. | **Medium** | raíz del repositorio | Crear `requirements.txt` con versiones fijas tomadas del servidor y ejecutar `pip-audit` y Dependabot. **Actualización:** el archivo se creó en la fase 1 pero solo lista `bcrypt`, `Flask-Bcrypt`, `pydantic` y `pydantic_core`; faltan `fastapi`, `python-jose`, `passlib` y `uvicorn`, y `bcrypt==5.0.0` hace fallar el arranque con `passlib` 1.7.4 (`ValueError: password cannot be longer than 72 bytes`, comprobado; con `bcrypt==4.0.1` funciona). Regenerar la lista desde el entorno del servidor (`pip freeze`). | Abierto |
 | F-06 | CWE-307 (A07) | `POST /token` no limita intentos ni bloquea cuentas. | **Medium** | `app/main.py`, `nginx/muvautomation.conf` | Añadir `limit_req` en Nginx y un contador de intentos fallidos en la app. | Abierto |
 | F-07 | CWE-20 (A03 Inyección / validación de entrada) | `PATCH /alertas/{id}` acepta cualquier texto en `status`. | **Low** | `app/main.py` | Restringir a los valores `open`, `investigating` y `closed`. | Abierto |
 | F-08 | CWE-200 (A05 Configuración de seguridad incorrecta) | Swagger (`/docs`) y OpenAPI están habilitados en la app; solo los protege la lista de IPs de Nginx. | **Low** | `app/main.py` | Desactivar `docs_url` y `openapi_url` en la app, o mantener la restricción de Nginx. | Abierto |
@@ -62,6 +64,20 @@ Falsos positivos descartados: `B105` de Bandit sobre la cadena `"bearer"` (es el
 ## 4. Validación antes y después
 
 ### 4.1 Evidencia y resultado de la remediación
+Rama `fix/lab-fsi-remediacion` — Pull Request: [COMPLETAR URL]. Commits (por título): «fix(F-01)…», «fix(F-03)…», «fix(F-04)…», «ci: workflow de pruebas…», «fix(F-02)…».
+
+| ID | Cambio | Prueba de regresión |
+|---|---|---|
+| F-01 | `SECRET_KEY = os.environ["SECRET_KEY"]`; la app no arranca si falta | `tests/test_secret_key.py` |
+| F-02 | Usuarios y hashes bcrypt desde `APP_USERS` (JSON); sin contraseñas en código ni comentarios | `tests/test_usuarios.py` (las contraseñas del repositorio devuelven 401; contraseñas de prueba aleatorias) |
+| F-03 | 6 `uses:` fijados a SHA de 40 caracteres (verificados con `git ls-remote`), versión en comentario | Reescaneo de Semgrep |
+| F-04 | `$host` → `$server_name` (líneas 21, 64, 72) | `nginx -t` + `curl -H "Host: ejemplo.test"` en el servidor |
+
+- Pruebas: `8 passed` en local (`pytest -q tests` con `SECRET_KEY` definida); en CI las ejecuta `.github/workflows/pruebas.yml`.
+- Meta de remediación (§3): F-01 y F-02 corregidos = 2 de 2 (100 %) una vez fusionado el PR.
+- **Pasos de despliegue (no están en el repositorio):** (1) generar una clave nueva: `py -c "import secrets; print(secrets.token_hex(32))"`; (2) generar hashes bcrypt nuevos con contraseñas nuevas y armar `APP_USERS`; (3) poner ambas en un `EnvironmentFile=` del servicio systemd con permisos `600`, fuera del repositorio; (4) reiniciar el servicio. Las contraseñas y la clave antiguas siguen en el historial de git y deben considerarse comprometidas.
+- Evidencia del DESPUÉS: [COMPLETAR] nuevo resultado de Semgrep sobre el PR (sin `jwt-python-hardcoded-secret` ni `mutable-action-tag`; `request-host-used` según lo que reporte la regla) y job `pytest` en verde.
+
 - Evidencia inicial (captura o artefacto): `semgrep.json` del workflow "Seguridad estática" sobre el commit `bbbb4cd`; salida del escaneo en consola.
 
 ### 4.2 Capturas del estado ANTES de la remediación
