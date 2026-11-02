@@ -1,0 +1,1 @@
+{"dependencies": [{"name": "bcrypt", "version": "5.0.0", "vulns": []}, {"name": "flask-bcrypt", "version": "1.0.1", "vulns": []}, {"name": "pydantic", "version": "2.12.5", "vulns": []}, {"name": "pydantic-core", "version": "2.41.5", "vulns": []}], "fixes": []}
