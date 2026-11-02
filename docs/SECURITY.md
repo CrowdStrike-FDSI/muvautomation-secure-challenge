@@ -199,3 +199,7 @@ Entorno propio y aislado: el servidor del equipo (`fdsi`, acceso por Tailscale),
 **Captura 17 — Gitleaks: «no leaks found» en el job de `main`**
 
 ![Gitleaks sin fugas](../evidence/lab5/sca/sca-11-gitleaks-sin-fugas.png)
+
+**Captura 18 — Informe ZAP (DAST pasivo, `localhost:8000`): 0 High, 0 Medium, 2 Low y 3 Informational**
+
+![Informe ZAP, resumen de alertas](../evidence/lab5/dast/dast-01-resumen-informe-zap.png)
