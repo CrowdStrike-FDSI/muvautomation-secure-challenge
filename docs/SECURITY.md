@@ -1,6 +1,6 @@
 # Seguridad del proyecto — evidencia del laboratorio
 
-> **Actualización 01-nov-2026:** se preparó el Pull Request de remediación (rama `fix/lab-fsi-remediacion`) que corrige F-01, F-02, F-03 y F-04 con pruebas de regresión; ver §4.1. Lo marcado **[COMPLETAR]** depende de pasos en GitHub o en el servidor.
+> **Actualización 01-nov-2026:** se preparó el Pull Request de remediación (rama `fix/lab-fsi-remediacion`) que corrige F-01, F-02, F-03 y F-04 con pruebas de regresión; ver §4.1. Actualización 02-nov-2026: se completaron las evidencias de SCA, DAST, CodeQL y Gitleaks (§2, §4.3 y §5); queda solo el campo de responsable y autorización (§1).
 >
 > **Fase 1: foto actual (análisis estático).** Solo se leyó el código del repositorio: no se desplegó, no se ejecutaron pruebas ni se instalaron las dependencias del proyecto. DAST y pentest quedan para la fase 2.
 
@@ -21,7 +21,7 @@ Fecha de la línea base: 28-oct-2026.
 |---|---|---|---|---|
 | Semgrep (`p/owasp-top-ten`, `p/secrets`) | SAST | 28-oct-2026 | 10 hallazgos: 1 ERROR y 9 WARNING | Artefacto `resultado-semgrep` (`semgrep.json`) del workflow "Seguridad estática" |
 | Revisión manual de `app/main.py` y `nginx/muvautomation.conf` | SAST manual | 28-oct-2026 | 6 hallazgos adicionales que Semgrep no detecta (F-02, F-05, F-06, F-07, F-08 y F-09) | Este documento |
-| Gitleaks | Secretos | 28-oct-2026 | Job ejecutado y en verde con `GITLEAKS_LICENSE`. [Pegar aquí el resultado del log: "no leaks found" o la lista] | Log del job "Gitleaks (secret scanning)" |
+| Gitleaks | Secretos | 02-nov-2026 | Job en verde con `GITLEAKS_LICENSE`: «1 commits scanned … no leaks found». **Alcance:** en un push, la acción solo escanea el commit nuevo, no todo el historial; por eso se complementa con la búsqueda manual en los 26 commits (fila siguiente). | Captura 17 (`evidence/lab5/sca/`) y log del job «Gitleaks (secret scanning)» |
 | Búsqueda manual en el historial de git (26 commits) | Secretos | 28-oct-2026 | Sin llaves privadas, archivos `.env` ni tokens reales. La clave del JWT y las contraseñas demo sí están en el código (ver F-01 y F-02). | Este documento |
 | Dependabot alerts + `pip-audit` | SCA | 02-nov-2026 | **Dependabot** activo: 132 alertas abiertas (9 Critical, 69 High, 47 Moderate, 7 Low), todas en `requirements-full.txt`, un `pip freeze` de un entorno general (tensorflow, torch, Pillow…) que no es el de la API. **`pip-audit` sobre el venv real del servidor** (24 paquetes): 19 entradas (12 identificadores distintos) en 4 paquetes: `pip` 25.1.1 (6 IDs, herramienta de instalación, no se ejecuta en la API), `pyasn1` 0.6.4 (4 CVE, parche 0.6.5), `ecdsa` 0.19.2 y `python-jose` 3.5.0 (1 ID cada uno, sin versión parchada indicada). Ver F-11. | Capturas en `evidence/lab5/sca/` (ver §4.3) |
 | CodeQL default setup | SAST | 02-nov-2026 | Activo (Security → Code scanning → Tools: «All tools working correctly»). 0 alertas abiertas y 0 cerradas sobre `main`; los checks de CodeQL del PR #4 pasaron | Pestaña Security → Code scanning |
@@ -189,3 +189,13 @@ Entorno propio y aislado: el servidor del equipo (`fdsi`, acceso por Tailscale),
 **Captura 15 — `pip-audit` después de actualizar `pyasn1` a 0.6.5: 15 entradas en 3 paquetes**
 
 ![pip-audit después](../evidence/lab5/sca/sca-09-pip-audit-despues-pyasn1.png)
+
+- Verificación funcional tras actualizar `pyasn1` (02-nov-2026): el servicio `falcon-api` reinició sin errores, `GET /alertas` sin token devolvió 401 y `POST /token` con una cuenta de laboratorio devolvió 200 con un token válido (la captura oculta la contraseña y el token). El único 502 observado ocurrió porque la petición se hizo durante los ~10 s de arranque de `uvicorn`; no se repitió.
+
+**Captura 16 — Login de laboratorio funcionando tras actualizar `pyasn1`: HTTP 200**
+
+![Login 200](../evidence/lab5/sca/sca-10-login-200-despues-pyasn1.png)
+
+**Captura 17 — Gitleaks: «no leaks found» en el job de `main`**
+
+![Gitleaks sin fugas](../evidence/lab5/sca/sca-11-gitleaks-sin-fugas.png)
