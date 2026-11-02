@@ -7,7 +7,7 @@
 ## 1. Alcance autorizado
 - Repositorio: https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge
 - Rama evaluada y commit: `main` / `bbbb4cd3f71246882c0b9fde074059480b7e9b7f` (15-oct-2026, "Lab 4 Parte 2: README y evidencias con capturas de Reverse Engineering")
-- Rama de trabajo del laboratorio y Pull Request: [rama] / [enlace al PR]
+- Rama de trabajo del laboratorio y Pull Request: `security/lab-fsi` (línea base) y `fix/lab-fsi-remediacion` (corrección) / https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/4
 - Tecnología: Python 3 / FastAPI (`app/main.py`), Nginx como reverse proxy (`nginx/muvautomation.conf`), JWT con roles `viewer` y `analyst`, datos en memoria.
 - Activos y riesgo principal: la API de alertas (`/alertas`, `/token`, `/audit`) y la clave que firma los JWT. El riesgo principal es que esa clave está publicada en el repositorio.
 - URL de staging propio (si aplica): no aplica en la fase 1 (el DAST pasivo corresponde a la fase 2).
@@ -25,7 +25,7 @@ Fecha de la línea base: 28-oct-2026.
 | Búsqueda manual en el historial de git (26 commits) | Secretos | 28-oct-2026 | Sin llaves privadas, archivos `.env` ni tokens reales. La clave del JWT y las contraseñas demo sí están en el código (ver F-01 y F-02). | Este documento |
 | Dependabot / `pip-audit` | SCA | 01-nov-2026 | `pip-audit` sobre `requirements.txt`: 0 vulnerabilidades en los 4 paquetes fijados (`sca.json`). **Ojo (F-05):** la lista está incompleta, así que «0 vulnerabilidades» no cubre FastAPI, python-jose ni passlib. Dependabot: [COMPLETAR] | `sca.json` / pestaña Security → Dependabot |
 | CodeQL default setup | SAST | [fecha] | [Pendiente: confirmar si se activó] | Pestaña Security → Code scanning |
-| OWASP ZAP Baseline | DAST pasivo | — | Fase 2 | — |
+| OWASP ZAP Baseline (local, ZAP 2.17.0, workflow `dast-local.yml`) | DAST pasivo | 02-nov-2026 | Sobre `http://localhost:8000` con usuarios y clave efímeros: 0 Critical/High/Medium; 2 Low (F-10) y 3 informativos que no son vulnerabilidades | `reports/zap-passive/` (https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/6) |
 
 Limitación documentada: la acción `gitleaks/gitleaks-action` exige licencia (`GITLEAKS_LICENSE`) en repositorios de una organización. El primer intento falló por ese motivo y se resolvió añadiendo la licencia como secreto del repositorio.
 
@@ -43,6 +43,7 @@ Escala de severidad unificada: Critical, High, Medium, Low. Semgrep reporta ERRO
 | F-07 | CWE-20 (A03 Inyección / validación de entrada) | `PATCH /alertas/{id}` acepta cualquier texto en `status`. | **Low** | `app/main.py` | Restringir a los valores `open`, `investigating` y `closed`. | Abierto |
 | F-08 | CWE-200 (A05 Configuración de seguridad incorrecta) | Swagger (`/docs`) y OpenAPI están habilitados en la app; solo los protege la lista de IPs de Nginx. | **Low** | `app/main.py` | Desactivar `docs_url` y `openapi_url` en la app, o mantener la restricción de Nginx. | Abierto |
 | F-09 | CWE-200 | El repositorio público incluye logs, un PCAP, el hostname `fdsi.tail61fc9f.ts.net` y las IPs Tailscale del equipo. | **Low** | `evidence/`, `README.md`, `nginx/` | Evaluar mover la evidencia a un repositorio privado o anonimizarla. | Abierto |
+| F-10 | CWE-693 (A05 Configuración de seguridad incorrecta) | ZAP (DAST pasivo) detectó que la API no envía `X-Content-Type-Options` ni `Cross-Origin-Resource-Policy` en 5 endpoints (`/alertas`, `/alertas/{id}`, `/audit`, `/openapi.json`, `POST /alertas`). El SAST no lo detecta porque es comportamiento en ejecución. | **Low** | `app/main.py` / `nginx/muvautomation.conf` | Añadir en Nginx `add_header X-Content-Type-Options nosniff always;` y `add_header Cross-Origin-Resource-Policy same-origin always;`. | Abierto (decisión: no se corrige; la meta solo cuenta Critical/High) |
 
 ### Resumen de la foto actual
 
@@ -51,7 +52,7 @@ Escala de severidad unificada: Critical, High, Medium, Low. Semgrep reporta ERRO
 | Critical | F-01 | 1 |
 | High | F-02 | 1 |
 | Medium | F-03, F-04, F-05, F-06 | 11 (6 + 3 + 1 + 1) |
-| Low | F-07, F-08, F-09 | 3 |
+| Low | F-07, F-08, F-09, F-10 | 3 + 2 de ZAP (F-10) |
 
 Falsos positivos descartados: `B105` de Bandit sobre la cadena `"bearer"` (es el tipo de token, no una credencial) y `B101` (`assert`) en `docs/evidence/reverse/solver_level2.py`, que no afecta a la aplicación.
 
@@ -64,7 +65,7 @@ Falsos positivos descartados: `B105` de Bandit sobre la cadena `"bearer"` (es el
 ## 4. Validación antes y después
 
 ### 4.1 Evidencia y resultado de la remediación
-Rama `fix/lab-fsi-remediacion` — Pull Request: [COMPLETAR URL]. Commits (por título): «fix(F-01)…», «fix(F-03)…», «fix(F-04)…», «ci: workflow de pruebas…», «fix(F-02)…».
+Rama `fix/lab-fsi-remediacion` — Pull Request: https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/4. Commits (por título): «fix(F-01)…», «fix(F-03)…», «fix(F-04)…», «ci: workflow de pruebas…», «fix(F-02)…».
 
 | ID | Cambio | Prueba de regresión |
 |---|---|---|
@@ -110,10 +111,37 @@ Las capturas están en `evidence/lab5/antes/`. Son dos imágenes de la salida de
 Las capturas del estado **DESPUÉS** (tras fusionar el PR de remediación) se guardan en `evidence/lab5/despues/`, con los mismos nombres pero con el prefijo `despues-`: nuevo resultado de Semgrep sin `jwt-python-hardcoded-secret` y resultado del test de regresión.
 
 ## 5. Pentest autorizado
-Fuera de alcance en la fase 1. Se planifica para la fase 2 (DAST pasivo con ZAP sobre el entorno propio y validación manual de un hallazgo).
+Entorno propio y aislado: el servidor del equipo (`fdsi`, acceso por Tailscale), con usuarios y datos ficticios, sin tocar sistemas de terceros ni hacer fuerza bruta, DoS ni exfiltración. Solo se enviaron peticiones inocuas (`GET /alertas`, `POST /token` con una cuenta de laboratorio).
 
-- Hipótesis: [pendiente: por ejemplo, ausencia de límite de intentos en `/token` (F-06) o cabeceras faltantes]
-- Entorno de pruebas aislado: [pendiente]
-- Solicitudes inocuas y respuestas observadas (sin datos personales): [pendiente]
-- Resultado: validado / no reproducible / requiere revisión
-- Recomendación y prueba de regresión: [pendiente]
+### 5.1 Validación manual de F-01 (clave de JWT en el repositorio)
+- Hipótesis: quien conozca la `SECRET_KEY` publicada puede firmar un JWT con rol `analyst` y la API lo aceptará.
+- Procedimiento: firmar localmente un token de prueba (usuario ficticio, vencimiento 5 min) con la clave del repositorio y enviarlo a `GET /alertas`. Se repitió tras rotar la clave.
+- Resultados observados (códigos HTTP):
+
+| Momento | Petición | Resultado |
+|---|---|---|
+| ANTES (clave del repositorio en uso) | `GET /alertas` con token firmado con la clave publicada | **200** (la API acepta un token falsificado) |
+| DESPUÉS (clave nueva en `/etc/falcon-api.env`, servicio reiniciado) | mismo tipo de token firmado con la clave antigua | **401** |
+| DESPUÉS | `POST /token` con la contraseña nueva de la cuenta de laboratorio y luego `GET /alertas` con ese token | **200** (el flujo legítimo sigue funcionando) |
+
+- Resultado: **validado** (reproducible antes de la corrección) y **corregido** (la clave antigua ya no sirve).
+- Corrección y regresión: https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/4; `tests/test_secret_key.py` y `tests/test_usuarios.py` (8 pruebas en verde). Operativo en el servidor: `SECRET_KEY` y `APP_USERS` en `EnvironmentFile=/etc/falcon-api.env` (propietario del servicio, permisos `600`, fuera del repositorio).
+- Nota de validación: un primer intento con una clave de otro laboratorio (`lab3-parte2…`) dio 401 incluso antes de la corrección; el 200 se obtuvo con la clave que realmente estaba en `main.py` (`lab4…`). Un 401 con una clave equivocada no demuestra que la API sea segura.
+- Evidencia: capturas de la sesión SSH (sin mostrar valores de claves ni contraseñas; ver advertencia del equipo sobre redactar antes de publicar).
+- Limitación: la clave y las contraseñas antiguas siguen en el historial de git y se consideran comprometidas; reescribir el historial queda fuera de alcance.
+
+### 5.2 DAST pasivo (OWASP ZAP Baseline, local)
+- Qué se ejecutó: ZAP 2.17.0 en modo pasivo contra `http://localhost:8000` (alternativa «baseline local» del laboratorio), con usuarios y clave efímeros. Informe en `reports/zap-passive/` (https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/6).
+- Resumen: 0 hallazgos Critical, High o Medium.
+
+| Alerta ZAP | Riesgo | Interpretación |
+|---|---|---|
+| Cross-Origin-Resource-Policy Header Missing or Invalid (CWE-693, 5 URL) | Low | Hallazgo real menor (F-10): sin CORP, otros orígenes podrían cargar las respuestas como recurso. |
+| X-Content-Type-Options Header Missing (CWE-693, 5 URL) | Low | Hallazgo real menor (F-10): sin `nosniff`, un navegador podría interpretar el contenido por su cuenta. |
+| A Client Error response code was returned (`POST /token`) | Informativo | Esperado: ZAP probó el login con datos inválidos y la API respondió 4xx. No es una vulnerabilidad. |
+| Authentication Request Identified (`POST /token`) | Informativo | ZAP reconoce el endpoint de login; es una nota, no un fallo. |
+| Non-Storable Content (5 URL) | Informativo | Las respuestas no se guardan en caché; es un comportamiento deseable para una API con datos de alertas. |
+
+- Qué aporta frente al SAST: Semgrep no vio las cabeceras de respuesta porque solo lee código; el DAST sí. No contradice los hallazgos F-01 a F-09.
+- Decisión sobre F-10: **no se corrige** en este laboratorio (la regla de remediación solo cuenta Critical y High, y ya se cumple con 2 de 2). Queda documentado, con la corrección propuesta en §3.
+- Limitaciones: escaneo pasivo y local (no cubre el despliegue real detrás de Nginx, donde las cabeceras también dependen de la configuración del proxy); no se probó límite de intentos (F-06) por la restricción de no hacer fuerza bruta.
