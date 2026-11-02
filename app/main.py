@@ -10,12 +10,12 @@ Resuelve del risk-register.md (Lab 3):
   - R10 (Elevation of Privilege): control de acceso por rol
     (viewer = solo lectura, analyst = lectura + escritura).
 
-Nota pedagogica: los usuarios demo siguen definidos en el codigo (hallazgo
-F-02, pendiente). SECRET_KEY ya se lee de la variable de entorno (F-01,
-Lab 5); en produccion los usuarios deben venir de una base de datos con
-hashes unicos por despliegue.
+Nota (Lab 5): SECRET_KEY (F-01) y los usuarios con sus hashes (F-02) se
+leen de variables de entorno (SECRET_KEY, APP_USERS); no hay secretos en el
+codigo. En produccion los usuarios deben venir de una base de datos.
 """
 
+import json
 import os
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
@@ -39,25 +39,30 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI(title="Falcon Incident Hub - API de Alertas")
 
 
-# --- Usuarios demo (Lab 3 - Parte 2: reemplazar por BD real en Lab 5/produccion) ---
-# Contrasenas de ejemplo: "viewer123" y "analyst123"
-fake_users_db = {
-    "oscar": {
-        "username": "oscar",
-        "role": "analyst",
-        "hashed_password": pwd_context.hash("analyst123"),
-    },
-    "robinson": {
-        "username": "robinson",
-        "role": "analyst",
-        "hashed_password": pwd_context.hash("analyst123"),
-    },
-    "auditor": {
-        "username": "auditor",
-        "role": "viewer",
-        "hashed_password": pwd_context.hash("viewer123"),
-    },
-}
+# --- Usuarios (F-02, Lab 5) ---
+# Ya no hay contrasenas en el codigo ni en comentarios. Los usuarios y sus
+# HASHES bcrypt se cargan de la variable de entorno APP_USERS (JSON):
+#   {"usuario": {"role": "analyst|viewer", "hashed_password": "$2b$..."}, ...}
+# Generar un hash:  python -c "from passlib.context import CryptContext as C; import getpass; print(C(schemes=['bcrypt']).hash(getpass.getpass()))"
+# Si la variable falta o es invalida, la app falla al arrancar (igual que SECRET_KEY).
+VALID_ROLES = {"analyst", "viewer"}
+
+
+def load_users() -> dict:
+    raw = json.loads(os.environ["APP_USERS"])
+    users = {}
+    for username, data in raw.items():
+        if data.get("role") not in VALID_ROLES or not data.get("hashed_password"):
+            raise ValueError(f"Usuario '{username}' invalido en APP_USERS")
+        users[username] = {
+            "username": username,
+            "role": data["role"],
+            "hashed_password": data["hashed_password"],
+        }
+    return users
+
+
+fake_users_db = load_users()
 
 
 class Token(BaseModel):

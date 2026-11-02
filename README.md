@@ -451,6 +451,19 @@ Pasó de 2 límites de confianza (tránsito de red, proxy→aplicación) a 4: se
 
 ---
 
+## 🔐 Laboratorio 5 — Seguridad en el ciclo de desarrollo (SAST, secretos, SCA, DAST)
+
+[![Seguridad estática](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/seguridad-estatica.yml/badge.svg)](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/seguridad-estatica.yml)
+[![Pruebas de regresión](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/pruebas.yml/badge.svg)](https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/actions/workflows/pruebas.yml)
+
+- [Informe de seguridad](docs/SECURITY.md) — alcance, herramientas, hallazgos y validación antes/después.
+- [Informe técnico de hallazgos](docs/REPORTE_HALLAZGOS.md) — F-01 a F-12, falsos positivos y reflexión.
+- [Checklist del Pull Request](docs/CHECKLIST_PR.md).
+- Workflows: `seguridad-estatica.yml` (Semgrep + Gitleaks), CodeQL (Default setup), `dast-staging.yml` (ZAP baseline manual), `pruebas.yml` (pytest).
+- Corrección principal: **F-01** — `SECRET_KEY` ahora se lee del entorno (`SECRET_KEY=$(python -c "import secrets;print(secrets.token_hex(32))")`); prueba de regresión en `tests/`.
+
+---
+
 ## 🤖 Uso responsable de IA
 
 La IA se emplea como **copiloto analítico**, nunca como autoridad. Todo hallazgo se valida contra comandos, logs, PCAP o configuración real. No se comparten IP reales, PCAP completos ni datos sensibles; toda evidencia se anonimiza antes de su uso.

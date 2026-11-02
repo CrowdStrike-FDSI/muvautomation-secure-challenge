@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   pytest:
-    name: pytest (regresión F-01)
+    name: pytest (regresión F-01 y F-02)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Instalar dependencias de la API y de prueba
-        # bcrypt<5: passlib 1.7.4 falla al importar con bcrypt 5.x (ver docs/SECURITY.md, F-12)
+        # bcrypt<5: passlib 1.7.4 falla al importar con bcrypt 5.x (ver docs/SECURITY.md, F-05)
         run: python -m pip install fastapi python-jose passlib "bcrypt==4.0.1" python-multipart httpx pytest
       - name: Ejecutar pruebas
         env:
