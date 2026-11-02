@@ -23,7 +23,7 @@ Fecha de la línea base: 28-oct-2026.
 | Revisión manual de `app/main.py` y `nginx/muvautomation.conf` | SAST manual | 28-oct-2026 | 6 hallazgos adicionales que Semgrep no detecta (F-02, F-05, F-06, F-07, F-08 y F-09) | Este documento |
 | Gitleaks | Secretos | 28-oct-2026 | Job ejecutado y en verde con `GITLEAKS_LICENSE`. [Pegar aquí el resultado del log: "no leaks found" o la lista] | Log del job "Gitleaks (secret scanning)" |
 | Búsqueda manual en el historial de git (26 commits) | Secretos | 28-oct-2026 | Sin llaves privadas, archivos `.env` ni tokens reales. La clave del JWT y las contraseñas demo sí están en el código (ver F-01 y F-02). | Este documento |
-| Dependabot alerts + `pip-audit` | SCA | 02-nov-2026 | **Dependabot** activo: 132 alertas abiertas (9 Critical, 69 High, 47 Moderate, 7 Low), todas en `requirements-full.txt`, un `pip freeze` de un entorno general (tensorflow, torch, Pillow…) que no es el de la API. **`pip-audit` sobre el venv real del servidor** (24 paquetes): 19 entradas (12 identificadores distintos) en 4 paquetes: `pip` 25.1.1 (6 IDs, herramienta de instalación, no se ejecuta en la API), `pyasn1` 0.6.4 (4 CVE, parche 0.6.5), `ecdsa` 0.19.2 y `python-jose` 3.5.0 (1 ID cada uno, sin versión parchada indicada). Ver F-11. | Capturas en `evidence/lab5/sca/`; salida de `pip-audit` en §4.3 |
+| Dependabot alerts + `pip-audit` | SCA | 02-nov-2026 | **Dependabot** activo: 132 alertas abiertas (9 Critical, 69 High, 47 Moderate, 7 Low), todas en `requirements-full.txt`, un `pip freeze` de un entorno general (tensorflow, torch, Pillow…) que no es el de la API. **`pip-audit` sobre el venv real del servidor** (24 paquetes): 19 entradas (12 identificadores distintos) en 4 paquetes: `pip` 25.1.1 (6 IDs, herramienta de instalación, no se ejecuta en la API), `pyasn1` 0.6.4 (4 CVE, parche 0.6.5), `ecdsa` 0.19.2 y `python-jose` 3.5.0 (1 ID cada uno, sin versión parchada indicada). Ver F-11. | Capturas en `evidence/lab5/sca/` (ver §4.3) |
 | CodeQL default setup | SAST | 02-nov-2026 | Activo (Security → Code scanning → Tools: «All tools working correctly»). 0 alertas abiertas y 0 cerradas sobre `main`; los checks de CodeQL del PR #4 pasaron | Pestaña Security → Code scanning |
 | OWASP ZAP Baseline (local, ZAP 2.17.0, workflow `dast-local.yml`) | DAST pasivo | 02-nov-2026 | Sobre `http://localhost:8000` con usuarios y clave efímeros: 0 Critical/High/Medium; 2 Low (F-10) y 3 informativos que no son vulnerabilidades | `reports/zap-passive/` (https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/6) |
 
@@ -152,3 +152,35 @@ Entorno propio y aislado: el servidor del equipo (`fdsi`, acceso por Tailscale),
 - Comando: `pip-audit --path <venv>/lib/python3.14/site-packages` (ejecutado desde un venv aparte, sin tocar el de la API). Resultado: 19 entradas en 4 paquetes (`pip`, `pyasn1`, `ecdsa`, `python-jose`).
 - Pendiente de decisión (F-11): confirmar con los avisos si `pyasn1`, `ecdsa` y `python-jose` aplican con HS256, y probar `pyasn1==0.6.5` con los 8 tests antes de subirlo.
 - Limitación: `requirements-full.txt` se conserva sin cambios; sus alertas siguen abiertas en Dependabot y no representan la API.
+
+**Captura 7 — Controles nativos de GitHub activos (Dependabot, Code scanning y Secret scanning)**
+
+![Controles activos](../evidence/lab5/sca/sca-01-controles-github-activos.png)
+
+**Captura 8 — Dependabot: 132 alertas abiertas (archivo `requirements-full.txt`)**
+
+![Dependabot 132 alertas](../evidence/lab5/sca/sca-02-dependabot-132-alertas.png)
+
+**Captura 9 — Dependabot por severidad: 9 Critical, 69 High, 47 Moderate, 7 Low**
+
+![Dependabot por severidad](../evidence/lab5/sca/sca-03-dependabot-severidades.png)
+
+**Captura 10 — Alerta #48 (`anyio`): versiones afectadas < 4.14.2**
+
+![Alerta 48 anyio](../evidence/lab5/sca/sca-04-alerta-48-anyio.png)
+
+**Captura 11 — Servidor: `anyio` 4.15.1 (parchada); entra como dependencia de `starlette`**
+
+![anyio en el servidor](../evidence/lab5/sca/sca-05-servidor-anyio-4-15-1.png)
+
+**Captura 12 — `pip freeze` del servidor (origen del nuevo `requirements.txt`)**
+
+![pip freeze del servidor](../evidence/lab5/sca/sca-06-pip-freeze-servidor.png)
+
+**Captura 13 — `pip-audit` sobre el entorno real: 19 entradas en 4 paquetes**
+
+![pip-audit](../evidence/lab5/sca/sca-07-pip-audit-servidor.png)
+
+**Captura 14 — Code scanning: «All tools working correctly» y 0 alertas sobre `main`**
+
+![CodeQL estado](../evidence/lab5/sca/sca-08-codeql-tool-status.png)
