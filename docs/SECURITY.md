@@ -151,7 +151,7 @@ Entorno propio y aislado: el servidor del equipo (`fdsi`, acceso por Tailscale),
 - Servidor: `anyio` 4.15.1 (versión parchada ≥ 4.14.2). La alerta #48 de Dependabot se calculó sobre `anyio==4.13.0` de `requirements-full.txt`; **no aplica al despliegue**. Además, `anyio` entra como dependencia indirecta de `starlette` y la API no abre conexiones TLS salientes.
 - Comando: `pip-audit --path <venv>/lib/python3.14/site-packages` (ejecutado desde un venv aparte, sin tocar el de la API). Resultado: 19 entradas en 4 paquetes (`pip`, `pyasn1`, `ecdsa`, `python-jose`).
 - Avisos revisados el 02-nov-2026 (OSV y GitHub Advisory Database; el detalle de `pyasn1` se contrastó con el aviso del proyecto): ver F-11 en §3 para el resumen y la aplicabilidad.
-- Prueba de la corrección: en un venv aparte con `requirements.txt` y `pyasn1==0.6.5`, `pytest -q tests` dio `8 passed` y `pip check` no encontró dependencias rotas. Falta reejecutar `pip-audit` en el servidor tras actualizar para confirmar que `pyasn1` desaparece de la lista.
+- Prueba de la corrección: en un venv aparte con `requirements.txt` y `pyasn1==0.6.5`, `pytest -q tests` dio `8 passed` y `pip check` no encontró dependencias rotas. En el servidor, tras `pip install pyasn1==0.6.5`, `pip-audit` pasó de 19 a 15 entradas y de 4 a 3 paquetes: `pyasn1` desapareció; quedan `pip` (herramienta del venv), `ecdsa` y `python-jose` (sin parche).
 - Limitación: `requirements-full.txt` se conserva sin cambios; sus alertas siguen abiertas en Dependabot y no representan la API.
 
 **Captura 7 — Controles nativos de GitHub activos (Dependabot, Code scanning y Secret scanning)**
@@ -185,3 +185,7 @@ Entorno propio y aislado: el servidor del equipo (`fdsi`, acceso por Tailscale),
 **Captura 14 — Code scanning: «All tools working correctly» y 0 alertas sobre `main`**
 
 ![CodeQL estado](../evidence/lab5/sca/sca-08-codeql-tool-status.png)
+
+**Captura 15 — `pip-audit` después de actualizar `pyasn1` a 0.6.5: 15 entradas en 3 paquetes**
+
+![pip-audit después](../evidence/lab5/sca/sca-09-pip-audit-despues-pyasn1.png)
