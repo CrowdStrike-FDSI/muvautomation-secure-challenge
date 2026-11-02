@@ -32,7 +32,7 @@ Severidad unificada: ERROR de Semgrep → High; WARNING → Medium; INFO → Low
 - **Impacto en confidencialidad, integridad o disponibilidad:** Confidencialidad: lectura de `/alertas` y `/audit`. Integridad: creación y modificación de alertas, y atribución falsa en el log de auditoría. Disponibilidad: bajo.
 - **Pasos de validación segura en entorno propio:** [pendiente, fase 2] Firmar un token de prueba con la clave en el entorno propio y comprobar que el servicio lo acepta; después rotar la clave y comprobar que ese token recibe `401`.
 - **Corrección (commit / pull request):** commit «fix(F-01)» del PR [COMPLETAR URL]. `SECRET_KEY = os.environ["SECRET_KEY"]`: la app falla al arrancar si no existe. Prueba de regresión: `tests/test_secret_key.py`. Pendiente operativo: generar una clave nueva y configurarla en systemd fuera del repositorio.
-- **Resultado del reescaneo:** [pendiente] Esperado: la regla `jwt-python-hardcoded-secret` ya no aparece.
+- **Resultado del reescaneo:** confirmado en el PR #3 — Semgrep pasó de 10 hallazgos a **0**; la regla `jwt-python-hardcoded-secret` ya no aparece. Prueba de regresión `tests/test_secret_key.py` en verde (`8 passed` junto con el resto de la suite). Evidencia: `evidence/lab5/despues/despues-02-semgrep.png` y `despues-03-pytest-8-passed.png`.
 
 ## Hallazgo F-02
 - **Título:** Contraseñas de usuarios demo visibles en el repositorio.
@@ -46,7 +46,7 @@ Severidad unificada: ERROR de Semgrep → High; WARNING → Medium; INFO → Low
 - **Impacto en confidencialidad, integridad o disponibilidad:** Confidencialidad e integridad, según el rol de la cuenta (`analyst` escribe, `viewer` lee).
 - **Pasos de validación segura en entorno propio:** [pendiente, fase 2] Iniciar sesión en el entorno propio con una cuenta de laboratorio y comprobar que, tras el cambio, las contraseñas del repositorio ya no funcionan.
 - **Corrección (commit / pull request):** commit «fix(F-02)» del PR [COMPLETAR URL]. Usuarios y hashes bcrypt se cargan de la variable `APP_USERS` (JSON); se eliminaron las contraseñas del código y comentarios. Prueba de regresión: `tests/test_usuarios.py` (las contraseñas antiguas del repositorio devuelven 401). Pendiente operativo: cambiar las contraseñas en el servidor.
-- **Resultado del reescaneo:** [pendiente]
+- **Resultado del reescaneo:** confirmado en el PR #3 — Semgrep en 0 hallazgos; `tests/test_usuarios.py` en verde, incluida la prueba de que las contraseñas del repositorio (`analyst123`, `viewer123`) ya devuelven 401.
 
 ## Hallazgo F-03 (resumen)
 - **Título:** Acciones de GitHub fijadas por etiqueta mutable.

@@ -76,7 +76,23 @@ Rama `fix/lab-fsi-remediacion` — Pull Request: [COMPLETAR URL]. Commits (por t
 - Pruebas: `8 passed` en local (`pytest -q tests` con `SECRET_KEY` definida); en CI las ejecuta `.github/workflows/pruebas.yml`.
 - Meta de remediación (§3): F-01 y F-02 corregidos = 2 de 2 (100 %) una vez fusionado el PR.
 - **Pasos de despliegue (no están en el repositorio):** (1) generar una clave nueva: `py -c "import secrets; print(secrets.token_hex(32))"`; (2) generar hashes bcrypt nuevos con contraseñas nuevas y armar `APP_USERS`; (3) poner ambas en un `EnvironmentFile=` del servicio systemd con permisos `600`, fuera del repositorio; (4) reiniciar el servicio. Las contraseñas y la clave antiguas siguen en el historial de git y deben considerarse comprometidas.
-- Evidencia del DESPUÉS: [COMPLETAR] nuevo resultado de Semgrep sobre el PR (sin `jwt-python-hardcoded-secret` ni `mutable-action-tag`; `request-host-used` según lo que reporte la regla) y job `pytest` en verde.
+- Evidencia del DESPUÉS (PR #3, `fix/lab-fsi-remediacion`): los 5 checks pasaron (CodeQL ×2, Gitleaks, Semgrep, pytest) y el reescaneo de Semgrep dio **0 hallazgos** — desaparecieron `jwt-python-hardcoded-secret`, los 6 `mutable-action-tag` y también los 3 `request-host-used`. Capturas en `evidence/lab5/despues/`:
+
+**Captura 3 — Checks del PR en verde (CodeQL, Gitleaks, Semgrep, pytest)**
+
+![Después: checks del PR aprobados](../evidence/lab5/despues/despues-01-checks-aprobados.png)
+
+**Captura 4 — Semgrep: 0 hallazgos tras la corrección**
+
+![Después: Semgrep sin hallazgos](../evidence/lab5/despues/despues-02-semgrep.png)
+
+**Captura 5 — pytest: 8 pruebas de regresión en verde**
+
+![Después: pytest 8 passed](../evidence/lab5/despues/despues-03-pytest-8-passed.png)
+
+**Captura 6 — Gitleaks: sin secretos detectados**
+
+![Después: Gitleaks sin hallazgos](../evidence/lab5/despues/despues-04-gitleaks.png)
 
 - Evidencia inicial (captura o artefacto): `semgrep.json` del workflow "Seguridad estática" sobre el commit `bbbb4cd`; salida del escaneo en consola.
 
