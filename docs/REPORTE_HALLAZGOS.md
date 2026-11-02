@@ -1,9 +1,9 @@
 # Informe técnico de hallazgos
 
 **Proyecto:** MuvAutomation Secure Challenge — Falcon Incident Hub (API de alertas con FastAPI y Nginx)  
-**Integrantes:** Oscar Andrés Sánchez Porras, Robinson Steven Núñez Portela [verificar la lista antes de entregar]  
+**Integrantes:** Oscar Andrés Sánchez Porras, Robinson Steven Núñez Portela  
 **Repositorio / commit:** https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge / `bbbb4cd3f71246882c0b9fde074059480b7e9b7f`  
-**Entorno autorizado:** solo el repositorio (análisis estático, sin ejecutar el código). [Responsable y fecha de autorización]  
+**Entorno autorizado:** el repositorio (fase 1, análisis estático sin ejecutar el código) y, en la fase 2, el servidor de pruebas propio del equipo y la API en `localhost`. Responsables: Oscar Andrés Sánchez Porras y Robinson Steven Núñez Portela; el laboratorio inició el 28 de octubre de 2026 a las 4:00 p. m. y se limitó al repositorio y al servidor de pruebas propios del equipo, con datos ficticios.  
 **Fecha:** 28 de octubre de 2026
 
 ## Resumen ejecutivo

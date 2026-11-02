@@ -1,8 +1,8 @@
 # Seguridad del proyecto — evidencia del laboratorio
 
-> **Actualización 01-nov-2026:** se preparó el Pull Request de remediación (rama `fix/lab-fsi-remediacion`) que corrige F-01, F-02, F-03 y F-04 con pruebas de regresión; ver §4.1. Actualización 02-nov-2026: se completaron las evidencias de SCA, DAST, CodeQL y Gitleaks (§2, §4.3 y §5); queda solo el campo de responsable y autorización (§1).
+> **Actualización 01-nov-2026:** se preparó el Pull Request de remediación (rama `fix/lab-fsi-remediacion`) que corrige F-01, F-02, F-03 y F-04 con pruebas de regresión; ver §4.1. Actualización 02-nov-2026: se completaron las evidencias de SCA, DAST, CodeQL y Gitleaks (§2, §4.3 y §5); el campo de responsable y autorización (§1) quedó completo.
 >
-> **Fase 1: foto actual (análisis estático).** Solo se leyó el código del repositorio: no se desplegó, no se ejecutaron pruebas ni se instalaron las dependencias del proyecto. DAST y pentest quedan para la fase 2.
+> **Fase 1: foto actual (análisis estático).** Solo se leyó el código del repositorio: no se desplegó, no se ejecutaron pruebas ni se instalaron las dependencias del proyecto. **Fase 2 (completada el 02-nov-2026):** DAST pasivo con ZAP en `localhost`, validación manual de F-01 en el servidor de pruebas propio y SCA sobre el entorno real (§4.3 y §5).
 
 ## 1. Alcance autorizado
 - Repositorio: https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge
@@ -11,7 +11,7 @@
 - Tecnología: Python 3 / FastAPI (`app/main.py`), Nginx como reverse proxy (`nginx/muvautomation.conf`), JWT con roles `viewer` y `analyst`, datos en memoria.
 - Activos y riesgo principal: la API de alertas (`/alertas`, `/token`, `/audit`) y la clave que firma los JWT. El riesgo principal es que esa clave está publicada en el repositorio.
 - URL de staging propio (si aplica): no aplica en la fase 1 (el DAST pasivo corresponde a la fase 2).
-- Responsable / autorización: [nombre del responsable / fecha de autorización]
+- Responsable / autorización: Oscar Andrés Sánchez Porras y Robinson Steven Núñez Portela (equipo de dos personas). Autorización: el laboratorio se inició el 28 de octubre de 2026 a las 4:00 p. m., y el alcance se limitó a este repositorio propio y al servidor de pruebas del equipo, con datos ficticios.
 - Fuera de alcance: producción, sistemas de terceros, datos reales, pruebas destructivas y ejecución de los binarios `fdsi-reverse/crackme_*`.
 
 ## 2. Línea base y herramientas
