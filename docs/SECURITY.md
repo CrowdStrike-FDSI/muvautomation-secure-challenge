@@ -131,8 +131,8 @@ Entorno propio y aislado: el servidor del equipo (`fdsi`, acceso por Tailscale),
 - Evidencia: capturas de la sesión SSH (sin mostrar valores de claves ni contraseñas; ver advertencia del equipo sobre redactar antes de publicar).
 - Limitación: la clave y las contraseñas antiguas siguen en el historial de git y se consideran comprometidas; reescribir el historial queda fuera de alcance.
 
-### 5.2 DAST pasivo (OWASP ZAP Baseline, local)
-- Qué se ejecutó: ZAP 2.17.0 en modo pasivo contra `http://localhost:8000` (alternativa «baseline local» del laboratorio), con usuarios y clave efímeros. Informe en `reports/zap-passive/` (https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/6).
+### 5.2 DAST pasivo (OWASP ZAP API scan, local)
+- Qué se ejecutó: ZAP 2.17.0 con `zap-api-scan.py` en modo pasivo (`-S`, sin ataques activos) contra `http://localhost:8000`, descubriendo las rutas desde `/openapi.json`, con usuarios y clave efímeros, dentro de un runner de GitHub Actions (workflow `dast-local.yml`). Es la alternativa «local con Docker» que permite el laboratorio. Resultado del resumen: `FAIL-NEW: 0`, `WARN-NEW: 2`, `PASS: 118`. Informe en `evidence/lab5/informe-zap-local/reports/` (https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/6).
 - Resumen: 0 hallazgos Critical, High o Medium.
 
 | Alerta ZAP | Riesgo | Interpretación |

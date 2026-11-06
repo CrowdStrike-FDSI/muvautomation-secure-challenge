@@ -16,7 +16,7 @@ El análisis estático (fase 1) encontró 9 hallazgos distintos (1 crítico, 1 a
 La remediación se preparó en el Pull Request `fix/lab-fsi-remediacion` (https://github.com/CrowdStrike-FDSI/muvautomation-secure-challenge/pull/4): corrige F-01 y F-02 (100 % de los críticos y altos, por encima del mínimo del 50 %) y también F-03 y F-04, con 8 pruebas de regresión automatizadas. Quedan abiertos F-05 a F-09. Tras la corrección, Semgrep pasó de 10 a 0 hallazgos y la validación manual en el servidor pasó de 200 a 401 con el token falsificado. F-10 (cabeceras faltantes, bajo) queda documentado y sin corregir.
 
 ## Metodología
-Identificación del alcance → SAST (Semgrep, con revisión manual de `app/main.py` y `nginx/muvautomation.conf`) → detección de secretos (Gitleaks y búsqueda en el historial de 26 commits) → SCA (`pip-audit`) → DAST pasivo (ZAP baseline local) → validación manual no destructiva → corrección → reescaneo.
+Identificación del alcance → SAST (Semgrep, con revisión manual de `app/main.py` y `nginx/muvautomation.conf`) → detección de secretos (Gitleaks y búsqueda en el historial de 26 commits) → SCA (`pip-audit`) → DAST pasivo (ZAP API scan local) → validación manual no destructiva → corrección → reescaneo.
 
 Severidad unificada: ERROR de Semgrep → High; WARNING → Medium; INFO → Low; secretos que permiten falsificar identidad → Critical.
 
